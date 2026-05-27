@@ -192,6 +192,29 @@
 
 
 
+
+    /* EVENT REGISTRATION ENCARTS */
+    .ev-regs{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+    .ev-reg-encart{display:flex;align-items:stretch;border-radius:8px;overflow:hidden;border:1px solid var(--border);height:48px;transition:border-color .15s;}
+    .ev-reg-encart:hover{border-color:var(--border2);}
+    .ev-reg-art{width:48px;flex-shrink:0;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;}
+    .ev-reg-art img{height:110%;width:auto;object-fit:contain;position:absolute;bottom:-2px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+    .ev-reg-art-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:11px;font-weight:700;opacity:.4;color:#fff;}
+    .ev-reg-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 10px;background:var(--bg2);min-width:0;}
+    .ev-reg-char{font-family:'Cinzel',serif;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ev-reg-player{font-size:10px;color:var(--muted2);margin-top:1px;}
+    .ev-reg-role{width:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg3);}
+    .ev-reg-hex{width:30px;height:30px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:13px;}
+    .ev-reg-hex.tank{background:rgba(55,138,221,.35);}
+    .ev-reg-hex.heal{background:rgba(29,158,117,.35);}
+    .ev-reg-hex.dps {background:rgba(224,107,107,.35);}
+    .ev-reg-hex.supp{background:rgba(127,212,232,.25);}
+    .ev-reg-hex.none{background:rgba(255,255,255,.08);}
+    .ev-reg-del{width:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg3);cursor:pointer;border:none;color:rgba(224,107,107,.5);font-size:11px;transition:color .15s;}
+    .ev-reg-del:hover{color:var(--danger);}
+    .ev-count-warn{color:#EF9F27;}
+    .ev-pending{background:rgba(239,159,39,.08);border:1px solid rgba(239,159,39,.2);border-radius:6px;padding:4px 10px;font-size:10px;color:#EF9F27;margin-bottom:8px;text-align:center;}
+
     /* CHAR ENCARTS */
     .player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:14px;}
     .player-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 14px 10px;transition:border-color .2s,box-shadow .2s;}
@@ -697,7 +720,7 @@ function EventsTab({events, setEvents, players, isAdmin, currentPlayerId, toast}
   const addEv    = ev  => { setEvents(es => [ev,...es]); setShowForm(false); toast(`Événement "${ev.title}" créé !`); };
   const rmEv     = id  => { const ev=events.find(e=>e.id===id); setEvents(es=>es.filter(e=>e.id!==id)); toast(`"${ev?.title}" supprimé`,'info'); };
   const register = (evId,playerId,charId,role) => {
-    setEvents(es => es.map(e => e.id===evId && !e.registrations.find(r=>r.playerId===playerId)
+    setEvents(es => es.map(e => e.id===evId && !e.registrations.find(r=>charId && r.charId===charId)
       ? {...e, registrations:[...e.registrations,{id:uid(),playerId,charId,role}]} : e));
     const p = players.find(x=>x.id===playerId);
     toast(`${p?.pseudo} s'est inscrit !`);
@@ -753,64 +776,90 @@ function NewEventForm({onAdd, onCancel}) {
 }
 
 function EventCard({event, players, isAdmin, currentPlayerId, onReg, onUnreg, onRm, isPast}) {
-  const [selPlayer, setSelPlayer] = useState(currentPlayerId || '');
-  const [selChar,   setSelChar]   = useState('');
+  const [selPlayer, setSelPlayer] = React.useState(currentPlayerId || '');
+  const [selChar,   setSelChar]   = React.useState('');
   const filled = event.registrations.length, max = event.maxPlayers;
-  const pct    = Math.min(100, Math.round(filled/max*100));
-  const status = isPast ? 'past' : filled>=max ? 'full' : 'open';
-  const statusLabel = {past:'Terminé', full:'Complet', open:'Ouvert'}[status];
-  const roleCounts  = {tank:0, heal:0, dps:0, supp:0};
-  event.registrations.forEach(r => { if(r.role && roleCounts[r.role]!==undefined) roleCounts[r.role]++; });
-  const allAvail = players.filter(p => !event.registrations.find(r=>r.playerId===p.id));
-  const availPlayers = isAdmin ? allAvail : allAvail.filter(p => p.id === currentPlayerId);
-  const selPObj      = players.find(p=>p.id===selPlayer);
+  const pct    = Math.min(100, Math.round(filled / max * 100));
+  const over   = filled > max;
+  const status = isPast ? 'past' : 'open';
+  const statusLabel = isPast ? 'Terminé' : over ? 'En attente' : filled >= max ? 'Complet' : 'Ouvert';
+  const statusCls   = isPast ? 'past' : over ? 'full' : filled >= max ? 'full' : 'open';
+  const roleMap = {tank:{icon:'🛡'},heal:{icon:'💊'},dps:{icon:'⚔'},supp:{icon:'✨'}};
+  const roleCounts = {tank:0,heal:0,dps:0,supp:0};
+  event.registrations.forEach(r=>{if(r.role&&roleCounts[r.role]!==undefined)roleCounts[r.role]++;});
+
+  // Characters already registered for this event
+  const registeredCharIds = new Set(event.registrations.map(r=>r.charId).filter(Boolean));
+
+  // Players visible in selector
+  const selectorPlayers = isAdmin ? players : players.filter(p=>p.id===currentPlayerId);
+
+  const selPObj   = players.find(p=>p.id===selPlayer);
+  // Only show characters not yet registered
+  const availChars = selPObj ? selPObj.chars.filter(c=>!registeredCharIds.has(c.id)) : [];
+
   const doReg = () => {
     if (!selPlayer) return;
     const ch = selPObj?.chars.find(c=>c.id===selChar);
     onReg(event.id, selPlayer, selChar||null, ch?.role||null);
-    setSelPlayer(''); setSelChar('');
+    setSelChar('');
   };
+
   return h('div', {className:'ev-card'},
     h('div',{className:'ev-head'},
       h('div',null,
         h('div',{className:'ev-title'},event.title),
         event.dungeon && h('div',{className:'ev-dungeon'},'⚔ '+event.dungeon)
       ),
-      h('span',{className:'status-pill '+status},statusLabel)
+      h('span',{className:'status-pill '+statusCls},statusLabel)
     ),
     h('div',{className:'ev-meta'},
       h('span',null,'📅 '+fmtDate(event.date)),
       h('span',null,'🕐 '+fmtTime(event.date)),
-      h('span',null,'👥 '+filled+' / '+max)
+      h('span',{className:over?'ev-count-warn':''},'👥 '+filled+' / '+max+(over?' ⚠':'')),
     ),
-    h('div',{className:'prog'}, h('div',{className:'prog-fill',style:{width:pct+'%',background:pct>=100?'#c9a227':'#1D9E75'}})),
+    h('div',{className:'prog'}, h('div',{className:'prog-fill',style:{width:pct+'%',background:pct>=100?'#EF9F27':'#1D9E75'}})),
+    over && h('div',{className:'ev-pending'},"⚠ Nombre de places dépassé — l'admin validera les participants"),
     Object.values(roleCounts).some(v=>v>0) && h('div',{className:'role-compo'},
-      ROLES.filter(r=>roleCounts[r.id]>0).map(r => h('div',{key:r.id,className:'role-chip '+r.id}, r.icon,' ',roleCounts[r.id]))
+      ROLES.filter(r=>roleCounts[r.id]>0).map(r=>h('div',{key:r.id,className:'role-chip '+r.id},r.icon,' ',roleCounts[r.id]))
     ),
-    event.registrations.length>0 && h('div',{className:'reg-list'},
+    event.registrations.length > 0 && h('div',{className:'ev-regs'},
       event.registrations.map(reg => {
-        const p  = players.find(x=>x.id===reg.playerId);
-        const c  = p?.chars.find(x=>x.id===reg.charId);
-        const ro = reg.role ? ROLE_MAP[reg.role] : null;
-        return h('div',{key:reg.id,className:'reg-chip'},
-          ro&&ro.icon+' ', p?.pseudo||'?',
-          c && h('span',{className:'char-hint'},' ('+c.name+')'),
-          !isPast && (isAdmin || reg.playerId === currentPlayerId) && h('button',{className:'reg-rm',onClick:()=>onUnreg(event.id,reg.id),title:'Se désinscrire'},' ✕')
+        const p   = players.find(x=>x.id===reg.playerId);
+        const c   = p?.chars.find(x=>x.id===reg.charId);
+        const theme = c ? (CLASS_THEMES[c.cls]||{gradient:'135deg,#1a1330,#2a1f4a'}) : null;
+        const img   = c ? (CLASS_IMAGES[c.cls]||null) : null;
+        const ro    = reg.role ? roleMap[reg.role] : null;
+        const canDel = !isPast && (isAdmin || reg.playerId===currentPlayerId);
+        return h('div',{key:reg.id,className:'ev-reg-encart'},
+          h('div',{className:'ev-reg-art',style:{background:theme?'linear-gradient('+theme.gradient+')':'var(--bg3)'}},
+            img ? h('img',{src:img,alt:c?.cls,draggable:false})
+                : h('div',{className:'ev-reg-art-ph'},c?c.cls.slice(0,3).toUpperCase():'?')
+          ),
+          h('div',{className:'ev-reg-body'},
+            h('div',{className:'ev-reg-char'}, c ? c.name : (p?.pseudo||'?')),
+            h('div',{className:'ev-reg-player'}, '👤 '+(p?.pseudo||'?')+(c?' · '+c.cls:''))
+          ),
+          h('div',{className:'ev-reg-role'},
+            h('div',{className:'ev-reg-hex '+(reg.role||'none')}, ro?ro.icon:'?')
+          ),
+          canDel && h('button',{className:'ev-reg-del',onClick:()=>onUnreg(event.id,reg.id),title:'Désinscrire'},'✕')
         );
       })
     ),
     event.note && h('div',{className:'ev-note'},event.note),
     h('div',{className:'ev-footer'},
-      !isPast && filled<max && availPlayers.length>0 && (isAdmin || currentPlayerId)
+      !isPast && (isAdmin || currentPlayerId) && selectorPlayers.length > 0
         ? h('div',{className:'reg-area'},
-            h('select',{value:selPlayer,onChange:e=>{setSelPlayer(e.target.value);setSelChar('');}},
+            isAdmin && h('select',{value:selPlayer,onChange:e=>{setSelPlayer(e.target.value);setSelChar('');}},
               h('option',{value:''},'— Joueur —'),
-              availPlayers.map(p=>h('option',{key:p.id,value:p.id},p.pseudo))
+              selectorPlayers.map(p=>h('option',{key:p.id,value:p.id},p.pseudo))
             ),
-            selPObj && selPObj.chars.length>0 && h('select',{value:selChar,onChange:e=>setSelChar(e.target.value)},
-              h('option',{value:''},'— Perso —'),
-              selPObj.chars.map(c=>{const ro=ROLE_MAP[c.role];return h('option',{key:c.id,value:c.id},(ro?ro.icon+' ':'')+c.name+' ('+c.cls+')');})
+            selPObj && availChars.length > 0 && h('select',{value:selChar,onChange:e=>setSelChar(e.target.value)},
+              h('option',{value:''},'— Personnage —'),
+              availChars.map(c=>{const ro=ROLE_MAP[c.role];return h('option',{key:c.id,value:c.id},(ro?ro.icon+' ':'')+c.name+' ('+c.cls+')');})
             ),
+            selPObj && availChars.length === 0 && !isAdmin && h('span',{style:{fontSize:'11px',color:'var(--muted2)'}}, 'Tous vos persos sont inscrits'),
             h('button',{className:'btn btn-sm btn-cyan',onClick:doReg,disabled:!selPlayer},"S'inscrire")
           )
         : h('span',null),
