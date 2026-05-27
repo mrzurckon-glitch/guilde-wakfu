@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guilde Wakfu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{min-height:100vh;}
+    body{background:#12111a;color:#e8e0d0;font-family:'Nunito',sans-serif;}
+    h1,h2,h3{font-family:'Cinzel',serif;}
+    #root{max-width:880px;margin:0 auto;padding:0 12px 48px;}
+    .toast-area{position:fixed;top:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:6px;max-width:320px;}
+    .toast{background:#1e1c2e;border:1px solid rgba(201,162,39,.35);border-radius:8px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px;animation:slideIn .25s ease;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+    .toast.success{border-color:rgba(29,158,117,.45);color:#5DCAA5;}
+    .toast.error{border-color:rgba(226,75,74,.45);color:#f09595;}
+    .toast.info{border-color:rgba(55,138,221,.4);color:#85B7EB;}
+    @keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+    .header{text-align:center;padding:28px 0 16px;border-bottom:1px solid rgba(201,162,39,.25);margin-bottom:20px;position:relative;}
+    .header h1{font-size:26px;color:#c9a227;letter-spacing:2px;text-shadow:0 0 20px rgba(201,162,39,.25);}
+    .name-input{background:transparent;border:none;border-bottom:1.5px solid rgba(201,162,39,.5);color:#c9a227;font-family:'Cinzel',serif;font-size:24px;text-align:center;letter-spacing:2px;width:280px;outline:none;}
+    .header-sub{font-size:11px;color:rgba(232,224,208,.45);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+    .header-icons{position:absolute;top:28px;right:0;display:flex;gap:6px;}
+    .icon-btn{background:none;border:1px solid rgba(201,162,39,.2);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;color:rgba(232,224,208,.6);transition:all .2s;position:relative;}
+    .icon-btn:hover{border-color:rgba(201,162,39,.5);color:#c9a227;}
+    .icon-btn.active{border-color:#c9a227;color:#c9a227;background:rgba(201,162,39,.1);}
+    .notif-badge{position:absolute;top:-5px;right:-5px;background:#E24B4A;color:#fff;border-radius:20px;font-size:9px;font-weight:700;padding:1px 5px;font-family:'Nunito',sans-serif;}
+    .admin-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:2px 10px;font-size:11px;color:#c9a227;margin-top:6px;}
+    .inline-panel{background:#1a1829;border:1px solid rgba(201,162,39,.3);border-radius:10px;padding:16px;margin-bottom:14px;animation:slideIn .2s ease;}
+    .panel-title{font-family:'Cinzel',serif;font-size:13px;color:#c9a227;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+    .panel-close{background:none;border:none;color:rgba(232,224,208,.4);cursor:pointer;font-size:16px;padding:0;}
+    .panel-close:hover{color:#e8e0d0;}
+    .notif-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+    .notif-item:last-child{border-bottom:none;}
+    .notif-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+    .notif-dot.success{background:#1D9E75;}.notif-dot.error{background:#E24B4A;}.notif-dot.info{background:#378ADD;}
+    .notif-time{font-size:10px;color:rgba(232,224,208,.35);margin-top:2px;}
+    .tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid rgba(201,162,39,.2);}
+    .tab{padding:10px 18px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:1px;color:rgba(232,224,208,.5);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;}
+    .tab:hover{color:#e8e0d0;}.tab.active{color:#c9a227;border-bottom-color:#c9a227;}
+    .tab .badge{display:inline-block;background:#c9a227;color:#1a1a2e;border-radius:20px;font-size:9px;padding:1px 5px;margin-left:6px;font-family:'Nunito',sans-serif;font-weight:700;}
+    .sec{font-family:'Cinzel',serif;font-size:12px;color:#c9a227;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+    .sec::after{content:'';flex:1;height:1px;background:rgba(201,162,39,.2);}
+    .player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:14px;}
+    .player-card{background:#1a1829;border:1px solid rgba(201,162,39,.22);border-radius:10px;padding:14px;transition:border-color .2s;}
+    .player-card:hover{border-color:rgba(201,162,39,.5);}
+    .p-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#16213e,#0f3460);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:600;font-size:13px;color:#c9a227;flex-shrink:0;border:1px solid rgba(201,162,39,.3);}
+    .p-name{font-family:'Cinzel',serif;font-size:13px;color:#c9a227;flex:1;}
+    .chars-list{display:flex;flex-wrap:wrap;gap:4px;min-height:22px;}
+    .char-tag{border-radius:20px;padding:3px 9px;font-size:11px;display:flex;align-items:center;gap:4px;border:1px solid;}
+    .char-tag.tank{background:rgba(55,138,221,.1);border-color:rgba(55,138,221,.3);color:#85B7EB;}
+    .char-tag.heal{background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3);color:#5DCAA5;}
+    .char-tag.dps{background:rgba(226,75,74,.1);border-color:rgba(226,75,74,.3);color:#f09595;}
+    .char-tag.supp{background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.25);color:#e0c96a;}
+    .char-tag .cls{font-size:9px;opacity:.65;}
+    .char-rm{background:none;border:none;cursor:pointer;opacity:.45;padding:0;font-size:9px;line-height:1;margin-left:2px;color:inherit;}
+    .char-rm:hover{opacity:1;}
+    .p-actions{display:flex;gap:5px;margin-top:9px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);}
+    input,select{background:rgba(255,255,255,.05);border:1px solid rgba(201,162,39,.25);border-radius:6px;padding:7px 10px;font-size:12px;color:#e8e0d0;font-family:'Nunito',sans-serif;}
+    input:focus,select:focus{outline:none;border-color:#c9a227;}
+    input::placeholder{color:rgba(232,224,208,.35);}
+    select option{background:#1a1829;color:#e8e0d0;}
+    .btn{cursor:pointer;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;border-radius:6px;padding:6px 12px;transition:all .15s;}
+    .btn-gold{background:#c9a227;color:#1a1a2e;border:none;}.btn-gold:hover{background:#e0b82a;}
+    .btn-outline{background:transparent;border:1px solid rgba(201,162,39,.3);color:#e8e0d0;}.btn-outline:hover{border-color:#c9a227;color:#c9a227;}
+    .btn-danger{background:transparent;border:1px solid rgba(226,75,74,.35);color:#f09595;}.btn-danger:hover{background:rgba(226,75,74,.1);}
+    .btn-teal{background:transparent;border:1px solid rgba(29,158,117,.4);color:#5DCAA5;}.btn-teal:hover{background:rgba(29,158,117,.12);}
+    .btn-sm{padding:4px 9px;font-size:11px;}
+    .btn:disabled{opacity:.4;cursor:default;}
+    .add-char-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+    .add-char-row input{flex:1;min-width:0;font-size:11px;padding:5px 7px;}
+    .add-char-row select{font-size:11px;padding:5px 7px;width:90px;flex-shrink:0;}
+    .add-char-row select.role-sel{width:90px;}
+    .add-player-row{display:flex;gap:8px;align-items:center;margin-top:2px;}
+    .add-player-row input{flex:1;}
+    .empty{font-size:11px;color:rgba(232,224,208,.35);font-style:italic;}
+    .event-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+    .ev-card{background:#1a1829;border:1px solid rgba(201,162,39,.22);border-radius:10px;padding:14px 16px;transition:border-color .2s;}
+    .ev-card:hover{border-color:rgba(201,162,39,.45);}
+    .ev-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+    .ev-title{font-family:'Cinzel',serif;font-size:14px;color:#c9a227;}
+    .ev-dungeon{font-size:11px;color:rgba(232,224,208,.45);margin-top:2px;}
+    .ev-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:rgba(232,224,208,.5);margin-bottom:8px;}
+    .role-compo{display:flex;gap:8px;margin-bottom:8px;}
+    .role-chip{font-size:11px;padding:2px 8px;border-radius:20px;display:flex;align-items:center;gap:3px;}
+    .role-chip.tank{background:rgba(55,138,221,.1);color:#85B7EB;border:1px solid rgba(55,138,221,.2);}
+    .role-chip.heal{background:rgba(29,158,117,.1);color:#5DCAA5;border:1px solid rgba(29,158,117,.2);}
+    .role-chip.dps{background:rgba(226,75,74,.1);color:#f09595;border:1px solid rgba(226,75,74,.2);}
+    .role-chip.supp{background:rgba(201,162,39,.1);color:#e0c96a;border:1px solid rgba(201,162,39,.2);}
+    .prog{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:10px;}
+    .prog-fill{height:100%;border-radius:2px;transition:width .3s;}
+    .reg-list{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px;}
+    .reg-chip{background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.2);border-radius:20px;padding:3px 9px;font-size:11px;color:#e0c96a;display:flex;align-items:center;gap:5px;}
+    .reg-chip .char-hint{opacity:.55;font-size:10px;}
+    .reg-rm{background:none;border:none;cursor:pointer;color:rgba(240,149,149,.6);padding:0;font-size:9px;line-height:1;}
+    .reg-rm:hover{color:#f09595;}
+    .ev-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-top:1px solid rgba(255,255,255,.05);padding-top:10px;}
+    .reg-area{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+    .reg-area select{font-size:11px;padding:5px 7px;}
+    .status-pill{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;white-space:nowrap;}
+    .open{background:rgba(29,158,117,.15);color:#5DCAA5;border:1px solid rgba(29,158,117,.25);}
+    .full{background:rgba(201,162,39,.12);color:#c9a227;border:1px solid rgba(201,162,39,.25);}
+    .past{background:rgba(255,255,255,.05);color:rgba(232,224,208,.4);border:1px solid rgba(255,255,255,.08);}
+    .ev-form{background:#1a1829;border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:16px;margin-bottom:14px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+    .form-field{display:flex;flex-direction:column;gap:3px;}
+    .form-field.full{grid-column:1/-1;}
+    .form-label{font-size:10px;color:rgba(232,224,208,.4);letter-spacing:.5px;text-transform:uppercase;}
+    .form-field input,.form-field select{width:100%;}
+    .form-actions{display:flex;gap:7px;justify-content:flex-end;}
+    .toggle-ev{background:none;border:1px dashed rgba(201,162,39,.3);border-radius:8px;color:rgba(232,224,208,.4);padding:10px;width:100%;font-family:'Nunito',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:12px;}
+    .toggle-ev:hover{border-color:#c9a227;color:#c9a227;}
+    .empty-state{text-align:center;padding:28px;color:rgba(232,224,208,.35);font-size:12px;}
+    .empty-state .big{font-family:'Cinzel',serif;font-size:14px;color:rgba(201,162,39,.4);margin-bottom:5px;}
+    .ev-note{font-size:11px;color:rgba(232,224,208,.45);border-left:2px solid rgba(201,162,39,.25);padding-left:8px;margin-bottom:8px;}
+    .lock-hint{text-align:center;font-size:11px;color:rgba(232,224,208,.3);padding:10px;font-style:italic;}
+    .admin-form{display:flex;flex-direction:column;gap:8px;}
+    .admin-form input{width:100%;font-size:13px;padding:8px 10px;}
+    .pwd-row{display:flex;gap:7px;}
+    .pwd-row input{flex:1;}
+    .change-pwd-section{border-top:1px solid rgba(201,162,39,.15);padding-top:12px;margin-top:12px;}
+    @media(max-width:600px){
+      .form-grid{grid-template-columns:1fr;}
+      .form-field.full{grid-column:1;}
+      .header-icons{position:static;justify-content:center;margin-top:8px;}
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const {useState,useEffect,useCallback}=React;
+const h=React.createElement;
+
+const CLASSES=["Iop","Cra","Eniripsa","Feca","Sadida","Sacrieur","Ecaflip","Enutrof","Sram","Xelor","Pandawa","Roublard","Masqueraider","Zobal","Ouginak","Steamer","Eliotrope","Huppermage","Forgelance","Osamodas"];
+const ROLES=[{id:'tank',label:'Tank',icon:'🛡'},{id:'heal',label:'Heal',icon:'💊'},{id:'dps',label:'DPS',icon:'⚔'},{id:'supp',label:'Support',icon:'✨'}];
+const ROLE_MAP=Object.fromEntries(ROLES.map(r=>[r.id,r]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+// localStorage helpers (remplace window.storage de Claude)
+const load=k=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+
+const fmtTime=d=>{try{return new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}catch{return '';}};
+const fmtDate=d=>{try{return new Date(d).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});}catch{return '';}};
+
+const DEMO_P=[
+  {id:uid(),pseudo:'Shadowblade',chars:[{id:uid(),name:'ShadowIop',cls:'Iop',role:'dps'},{id:uid(),name:'ShadowCra',cls:'Cra',role:'dps'}]},
+  {id:uid(),pseudo:'Lumina',chars:[{id:uid(),name:'LuminaHupper',cls:'Huppermage',role:'heal'}]},
+  {id:uid(),pseudo:'IronFist',chars:[{id:uid(),name:'FistSacri',cls:'Sacrieur',role:'tank'},{id:uid(),name:'FistPanda',cls:'Pandawa',role:'supp'}]},
+];
+
+function App(){
+  const[tab,setTab]=useState('roster');
+  const[players,setPlayers]=useState(()=>load('g:players')||DEMO_P);
+  const[events,setEvents]=useState(()=>load('g:events')||[]);
+  const[guildName,setGuildName]=useState(()=>load('g:name')||'Ma Guilde');
+  const[isAdmin,setIsAdmin]=useState(false);
+  const[adminPwd,setAdminPwd]=useState(()=>load('g:pwd')||'admin');
+  const[showAdminPanel,setShowAdminPanel]=useState(false);
+  const[showNotifPanel,setShowNotifPanel]=useState(false);
+  const[notifs,setNotifs]=useState([]);
+  const[toasts,setToasts]=useState([]);
+  const[unread,setUnread]=useState(0);
+  const[editName,setEditName]=useState(false);
+
+  useEffect(()=>{save('g:players',players);},[players]);
+  useEffect(()=>{save('g:events',events);},[events]);
+  useEffect(()=>{save('g:name',guildName);},[guildName]);
+  useEffect(()=>{save('g:pwd',adminPwd);},[adminPwd]);
+
+  const toast=useCallback((msg,type='success')=>{
+    const id=uid(),time=new Date();
+    setToasts(ts=>[...ts,{id,msg,type}]);
+    setNotifs(ns=>[{id,msg,type,time},...ns].slice(0,30));
+    setUnread(u=>u+1);
+    setTimeout(()=>setToasts(ts=>ts.filter(t=>t.id!==id)),3500);
+  },[]);
+
+  const now=new Date();
+  const upcoming=events.filter(e=>new Date(e.date)>=now).length;
+
+  return h('div',null,
+    h('div',{className:'toast-area'},toasts.map(t=>h('div',{key:t.id,className:'toast '+t.type},t.type==='success'?'✓':t.type==='error'?'✕':'ℹ',' ',t.msg))),
+    h('div',{id:'root-inner'},
+      h('div',{className:'header'},
+        editName&&isAdmin
+          ?h('input',{className:'name-input',value:guildName,autoFocus:true,onChange:ev=>setGuildName(ev.target.value),onBlur:()=>setEditName(false),onKeyDown:ev=>{if(ev.key==='Enter')setEditName(false);}})
+          :h('h1',{onClick:()=>isAdmin&&setEditName(true),style:{cursor:isAdmin?'pointer':'default'},title:isAdmin?'Renommer la guilde':''},guildName),
+        h('p',{className:'header-sub'},'✦ Guilde Wakfu ✦'),
+        isAdmin&&h('div',{style:{marginTop:'4px'}},h('span',{className:'admin-chip'},'🔓 Mode Admin actif')),
+        h('div',{className:'header-icons'},
+          h('button',{className:'icon-btn'+(showNotifPanel?' active':''),onClick:()=>{setShowNotifPanel(s=>!s);setUnread(0);},title:'Notifications'},
+            '🔔',unread>0&&h('span',{className:'notif-badge'},unread>9?'9+':unread)
+          ),
+          h('button',{className:'icon-btn'+(isAdmin?' active':''),onClick:()=>setShowAdminPanel(s=>!s),title:isAdmin?'Admin actif':'Mode admin'},isAdmin?'🔓':'🔒')
+        )
+      ),
+      showAdminPanel&&h(AdminPanel,{isAdmin,
+        onLogin:p=>{if(p===adminPwd){setIsAdmin(true);setShowAdminPanel(false);toast('Mode administrateur activé !');}else toast('Mot de passe incorrect','error');},
+        onLogout:()=>{setIsAdmin(false);setShowAdminPanel(false);toast('Déconnecté du mode admin','info');},
+        onChangePwd:(old,np)=>{if(old!==adminPwd){toast('Ancien mot de passe incorrect','error');return false;}setAdminPwd(np);toast('Mot de passe modifié !');return true;},
+        onClose:()=>setShowAdminPanel(false)
+      }),
+      showNotifPanel&&h(NotifPanel,{notifs,onClose:()=>setShowNotifPanel(false)}),
+      h('div',{className:'tabs'},
+        h('button',{className:'tab'+(tab==='roster'?' active':''),onClick:()=>setTab('roster')},'Roster',h('span',{className:'badge'},players.length)),
+        h('button',{className:'tab'+(tab==='events'?' active':''),onClick:()=>setTab('events')},'Événements',upcoming>0&&h('span',{className:'badge'},upcoming))
+      ),
+      tab==='roster'?h(RosterTab,{players,setPlayers,isAdmin,toast}):h(EventsTab,{events,setEvents,players,isAdmin,toast})
+    )
+  );
+}
+
+function AdminPanel({isAdmin,onLogin,onLogout,onChangePwd,onClose}){
+  const[pwd,setPwd]=useState('');
+  const[oldp,setOldp]=useState('');
+  const[newp,setNewp]=useState('');
+  const[showChange,setShowChange]=useState(false);
+  return h('div',{className:'inline-panel'},
+    h('div',{className:'panel-title'},isAdmin?'Gestion admin':'Connexion admin',h('button',{className:'panel-close',onClick:onClose},'✕')),
+    isAdmin
+      ?h('div',null,
+          h('p',{style:{fontSize:'12px',color:'rgba(232,224,208,.5)',marginBottom:'12px'}},'Vous êtes connecté en tant qu\'administrateur.'),
+          h('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap'}},
+            h('button',{className:'btn btn-danger',onClick:onLogout},'🔒 Se déconnecter'),
+            h('button',{className:'btn btn-outline',onClick:()=>setShowChange(s=>!s)},'🔑 Changer mot de passe')
+          ),
+          showChange&&h('div',{className:'change-pwd-section'},
+            h('div',{style:{fontSize:'11px',color:'rgba(232,224,208,.4)',marginBottom:'8px'}},'Modifier le mot de passe'),
+            h('div',{className:'pwd-row'},
+              h('input',{placeholder:'Ancien',type:'password',value:oldp,onChange:e=>setOldp(e.target.value)}),
+              h('input',{placeholder:'Nouveau',type:'password',value:newp,onChange:e=>setNewp(e.target.value)}),
+              h('button',{className:'btn btn-gold',onClick:()=>{if(onChangePwd(oldp,newp)){setOldp('');setNewp('');setShowChange(false);}}},'OK')
+            )
+          )
+        )
+      :h('div',{className:'admin-form'},
+          h('p',{style:{fontSize:'12px',color:'rgba(232,224,208,.4)',marginBottom:'8px'}},'Mot de passe admin (défaut : admin)'),
+          h('div',{className:'pwd-row'},
+            h('input',{placeholder:'Mot de passe',type:'password',value:pwd,onChange:e=>setPwd(e.target.value),onKeyDown:ev=>{if(ev.key==='Enter')onLogin(pwd);}}),
+            h('button',{className:'btn btn-gold',onClick:()=>onLogin(pwd)},'Connexion')
+          )
+        )
+  );
+}
+
+function NotifPanel({notifs,onClose}){
+  const fmt=d=>{try{return new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}catch{return'';}};
+  return h('div',{className:'inline-panel'},
+    h('div',{className:'panel-title'},'Notifications',h('button',{className:'panel-close',onClick:onClose},'✕')),
+    notifs.length===0
+      ?h('p',{style:{fontSize:'12px',color:'rgba(232,224,208,.35)',fontStyle:'italic'}},'Aucune activité récente.')
+      :notifs.map(n=>h('div',{key:n.id,className:'notif-item'},
+          h('div',{className:'notif-dot '+n.type}),
+          h('div',null,h('div',{style:{fontSize:'12px'}},n.msg),h('div',{className:'notif-time'},fmt(n.time)))
+        ))
+  );
+}
+
+function RosterTab({players,setPlayers,isAdmin,toast}){
+  const[newP,setNewP]=useState('');
+  const addPlayer=()=>{const t=newP.trim();if(!t||players.find(p=>p.pseudo.toLowerCase()===t.toLowerCase()))return;setPlayers(ps=>[...ps,{id:uid(),pseudo:t,chars:[]}]);setNewP('');toast(`"${t}" ajouté à la guilde`);};
+  const rmPlayer=id=>{const p=players.find(x=>x.id===id);setPlayers(ps=>ps.filter(p=>p.id!==id));toast(`"${p?.pseudo}" retiré`,'info');};
+  const addChar=(pid,name,cls,role)=>setPlayers(ps=>ps.map(p=>p.id===pid?{...p,chars:[...p.chars,{id:uid(),name,cls,role}]}:p));
+  const rmChar=(pid,cid)=>setPlayers(ps=>ps.map(p=>p.id===pid?{...p,chars:p.chars.filter(c=>c.id!==cid)}:p));
+  return h('div',null,
+    h('div',{className:'sec'},`${players.length} Joueur${players.length>1?'s':''}`),
+    players.length===0?h('div',{className:'empty-state'},h('div',{className:'big'},'Aucun joueur'),'Aucun membre enregistré.')
+      :h('div',{className:'player-grid'},players.map(p=>h(PlayerCard,{key:p.id,player:p,isAdmin,onAddChar:addChar,onRmChar:rmChar,onRm:rmPlayer}))),
+    isAdmin&&h('div',{className:'add-player-row'},
+      h('input',{placeholder:'Pseudo joueur…',value:newP,onChange:e=>setNewP(e.target.value),onKeyDown:e=>{if(e.key==='Enter')addPlayer();}}),
+      h('button',{className:'btn btn-gold',onClick:addPlayer},'+ Ajouter')
+    ),
+    !isAdmin&&h('p',{className:'lock-hint'},'🔒 Connectez-vous en mode admin pour gérer les membres.')
+  );
+}
+
+function PlayerCard({player,isAdmin,onAddChar,onRmChar,onRm}){
+  const[name,setName]=useState('');
+  const[cls,setCls]=useState(CLASSES[0]);
+  const[role,setRole]=useState('dps');
+  const[adding,setAdding]=useState(false);
+  const init=player.pseudo.slice(0,2).toUpperCase();
+  const doAdd=()=>{const t=name.trim();if(!t)return;onAddChar(player.id,t,cls,role);setName('');setAdding(false);};
+  return h('div',{className:'player-card'},
+    h('div',{className:'p-header'},h('div',{className:'avatar'},init),h('span',{className:'p-name'},player.pseudo)),
+    player.chars.length===0?h('span',{className:'empty'},'Aucun personnage')
+      :h('div',{className:'chars-list'},player.chars.map(c=>{
+          const ro=ROLE_MAP[c.role]||ROLE_MAP.dps;
+          return h('div',{key:c.id,className:'char-tag '+(c.role||'dps')},
+            ro.icon,' ',c.name,' ',h('span',{className:'cls'},c.cls),
+            isAdmin&&h('button',{className:'char-rm',onClick:()=>onRmChar(player.id,c.id)},'✕')
+          );
+        })),
+    isAdmin&&adding&&h('div',{className:'add-char-row'},
+      h('input',{placeholder:'Nom du perso…',value:name,autoFocus:true,onChange:e=>setName(e.target.value),onKeyDown:e=>{if(e.key==='Enter')doAdd();}}),
+      h('select',{value:cls,onChange:e=>setCls(e.target.value),style:{width:'100px'}},CLASSES.map(c=>h('option',{key:c,value:c},c))),
+      h('select',{className:'role-sel',value:role,onChange:e=>setRole(e.target.value)},ROLES.map(r=>h('option',{key:r.id,value:r.id},r.icon+' '+r.label))),
+      h('button',{className:'btn btn-sm btn-teal',onClick:doAdd},'✓'),
+      h('button',{className:'btn btn-sm btn-outline',onClick:()=>setAdding(false)},'✕')
+    ),
+    isAdmin&&h('div',{className:'p-actions'},
+      h('button',{className:'btn btn-sm btn-teal',onClick:()=>setAdding(!adding)},'+ Perso'),
+      h('button',{className:'btn btn-sm btn-danger',onClick:()=>onRm(player.id)},'Retirer')
+    )
+  );
+}
+
+function EventsTab({events,setEvents,players,isAdmin,toast}){
+  const[showForm,setShowForm]=useState(false);
+  const now=new Date();
+  const addEv=ev=>{setEvents(es=>[ev,...es]);setShowForm(false);toast(`Événement "${ev.title}" créé !`);};
+  const rmEv=id=>{const ev=events.find(e=>e.id===id);setEvents(es=>es.filter(e=>e.id!==id));toast(`"${ev?.title}" supprimé`,'info');};
+  const register=(evId,playerId,charId,role)=>{
+    setEvents(es=>es.map(e=>e.id===evId&&!e.registrations.find(r=>r.playerId===playerId)?{...e,registrations:[...e.registrations,{id:uid(),playerId,charId,role}]}:e));
+    const p=players.find(x=>x.id===playerId);toast(`${p?.pseudo} s'est inscrit !`);
+  };
+  const unregister=(evId,regId)=>{setEvents(es=>es.map(e=>e.id===evId?{...e,registrations:e.registrations.filter(r=>r.id!==regId)}:e));toast('Joueur désinscrit','info');};
+  const upcoming=events.filter(e=>new Date(e.date)>=now).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const past=events.filter(e=>new Date(e.date)<now).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return h('div',null,
+    isAdmin&&h('button',{className:'toggle-ev',onClick:()=>setShowForm(s=>!s)},showForm?'✕ Annuler':'✦ Créer un événement'),
+    showForm&&isAdmin&&h(NewEventForm,{onAdd:addEv,onCancel:()=>setShowForm(false)}),
+    !isAdmin&&h('p',{className:'lock-hint'},'🔒 Connectez-vous en mode admin pour créer des événements.'),
+    upcoming.length>0&&h('div',null,h('div',{className:'sec'},'À venir'),h('div',{className:'event-list'},upcoming.map(ev=>h(EventCard,{key:ev.id,event:ev,players,isAdmin,onReg:register,onUnreg:unregister,onRm:rmEv,isPast:false})))),
+    past.length>0&&h('div',null,h('div',{className:'sec',style:{marginTop:'14px'}},'Terminés'),h('div',{className:'event-list'},past.map(ev=>h(EventCard,{key:ev.id,event:ev,players,isAdmin,onReg:register,onUnreg:unregister,onRm:rmEv,isPast:true})))),
+    upcoming.length===0&&past.length===0&&h('div',{className:'empty-state'},h('div',{className:'big'},'Aucun événement'),'Créez votre premier raid de guilde !')
+  );
+}
+
+function NewEventForm({onAdd,onCancel}){
+  const[title,setTitle]=useState('');const[dungeon,setDungeon]=useState('');const[date,setDate]=useState('');const[time,setTime]=useState('20:00');const[max,setMax]=useState('6');const[note,setNote]=useState('');
+  const sub=()=>{if(!title.trim()||!date)return;onAdd({id:uid(),title:title.trim(),dungeon:dungeon.trim(),date:date+'T'+time,maxPlayers:parseInt(max)||6,note:note.trim(),registrations:[]});};
+  return h('div',{className:'ev-form'},
+    h('div',{className:'sec'},'Nouvel événement'),
+    h('div',{className:'form-grid'},
+      h('div',{className:'form-field full'},h('label',{className:'form-label'},'Titre'),h('input',{placeholder:'Ex: Raid Merkator',value:title,onChange:e=>setTitle(e.target.value)})),
+      h('div',{className:'form-field'},h('label',{className:'form-label'},'Donjon'),h('input',{placeholder:'Ex: Donjon Bworker',value:dungeon,onChange:e=>setDungeon(e.target.value)})),
+      h('div',{className:'form-field'},h('label',{className:'form-label'},'Places max'),h('input',{type:'number',min:1,max:24,value:max,onChange:e=>setMax(e.target.value)})),
+      h('div',{className:'form-field'},h('label',{className:'form-label'},'Date'),h('input',{type:'date',value:date,onChange:e=>setDate(e.target.value)})),
+      h('div',{className:'form-field'},h('label',{className:'form-label'},'Heure'),h('input',{type:'time',value:time,onChange:e=>setTime(e.target.value)})),
+      h('div',{className:'form-field full'},h('label',{className:'form-label'},'Note'),h('input',{placeholder:'Niveau requis, stuff…',value:note,onChange:e=>setNote(e.target.value)}))
+    ),
+    h('div',{className:'form-actions'},h('button',{className:'btn btn-outline',onClick:onCancel},'Annuler'),h('button',{className:'btn btn-gold',onClick:sub},'Créer'))
+  );
+}
+
+function EventCard({event,players,isAdmin,onReg,onUnreg,onRm,isPast}){
+  const[selPlayer,setSelPlayer]=useState('');const[selChar,setSelChar]=useState('');
+  const filled=event.registrations.length,max=event.maxPlayers;
+  const pct=Math.min(100,Math.round(filled/max*100));
+  const status=isPast?'past':filled>=max?'full':'open';
+  const statusLabel={past:'Terminé',full:'Complet',open:'Ouvert'}[status];
+  const roleCounts={tank:0,heal:0,dps:0,supp:0};
+  event.registrations.forEach(r=>{if(r.role&&roleCounts[r.role]!==undefined)roleCounts[r.role]++;});
+  const availPlayers=players.filter(p=>!event.registrations.find(r=>r.playerId===p.id));
+  const selPObj=players.find(p=>p.id===selPlayer);
+  const doReg=()=>{if(!selPlayer)return;const ch=selPObj?.chars.find(c=>c.id===selChar);onReg(event.id,selPlayer,selChar||null,ch?.role||null);setSelPlayer('');setSelChar('');};
+  return h('div',{className:'ev-card'},
+    h('div',{className:'ev-head'},
+      h('div',null,h('div',{className:'ev-title'},event.title),event.dungeon&&h('div',{className:'ev-dungeon'},'⚔ '+event.dungeon)),
+      h('span',{className:'status-pill '+status},statusLabel)
+    ),
+    h('div',{className:'ev-meta'},h('span',null,'📅 '+fmtDate(event.date)),h('span',null,'🕐 '+fmtTime(event.date)),h('span',null,'👥 '+filled+' / '+max)),
+    h('div',{className:'prog'},h('div',{className:'prog-fill',style:{width:pct+'%',background:pct>=100?'#c9a227':'#1D9E75'}})),
+    Object.values(roleCounts).some(v=>v>0)&&h('div',{className:'role-compo'},ROLES.filter(r=>roleCounts[r.id]>0).map(r=>h('div',{key:r.id,className:'role-chip '+r.id},r.icon,' ',roleCounts[r.id]))),
+    event.registrations.length>0&&h('div',{className:'reg-list'},event.registrations.map(reg=>{
+      const p=players.find(x=>x.id===reg.playerId);const c=p?.chars.find(x=>x.id===reg.charId);const ro=reg.role?ROLE_MAP[reg.role]:null;
+      return h('div',{key:reg.id,className:'reg-chip'},ro&&ro.icon+' ',p?.pseudo||'?',c&&h('span',{className:'char-hint'},' ('+c.name+')'),!isPast&&isAdmin&&h('button',{className:'reg-rm',onClick:()=>onUnreg(event.id,reg.id)},' ✕'));
+    })),
+    event.note&&h('div',{className:'ev-note'},event.note),
+    h('div',{className:'ev-footer'},
+      !isPast&&filled<max&&availPlayers.length>0
+        ?h('div',{className:'reg-area'},
+            h('select',{value:selPlayer,onChange:e=>{setSelPlayer(e.target.value);setSelChar('');}},h('option',{value:''},'— Joueur —'),availPlayers.map(p=>h('option',{key:p.id,value:p.id},p.pseudo))),
+            selPObj&&selPObj.chars.length>0&&h('select',{value:selChar,onChange:e=>setSelChar(e.target.value)},h('option',{value:''},'— Perso —'),selPObj.chars.map(c=>{const ro=ROLE_MAP[c.role];return h('option',{key:c.id,value:c.id},(ro?ro.icon+' ':'')+c.name+' ('+c.cls+')');})),
+            h('button',{className:'btn btn-sm btn-teal',onClick:doReg,disabled:!selPlayer},"S'inscrire")
+          )
+        :h('span',null),
+      isAdmin&&h('button',{className:'btn btn-sm btn-danger',onClick:()=>onRm(event.id)},'Supprimer')
+    )
+  );
+}
+
+ReactDOM.render(h(App),document.getElementById('root'));
+</script>
+</body>
+</html>
