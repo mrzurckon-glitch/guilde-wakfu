@@ -358,6 +358,12 @@ var _saveTimer      = null;
 var _saveInProgress = false;
 var _lastGSSave     = 0;
 var _pollUpdating   = false;
+var _lastUserEdit   = 0;      // timestamp de la dernière action utilisateur
+
+// Toute interaction utilisateur bloque le poll pendant 2s
+document.addEventListener('click',   function() { _lastUserEdit = Date.now(); });
+document.addEventListener('keydown', function() { _lastUserEdit = Date.now(); });
+document.addEventListener('touchstart', function() { _lastUserEdit = Date.now(); });
 
 async function _doGSSave(state, onStatus) {
   _saveTimer = null;
@@ -622,6 +628,8 @@ function App() {
   useEffect(() => {
     if (!isConfigured()) return;
     const poll = setInterval(async () => {
+      // Garde 0 : interaction utilisateur récente (< 2s) — couvre la fenêtre render→useEffect
+      if (Date.now() - _lastUserEdit < 2000) return;
       // Garde 1 : save planifiée ou en cours
       if (_saveInProgress || _saveTimer) return;
       // Garde 2 : save GS récente (< 5s)
