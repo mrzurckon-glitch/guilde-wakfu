@@ -517,8 +517,9 @@ function App() {
     try { if (currentPlayerId) localStorage.setItem('guild_me', currentPlayerId); else localStorage.removeItem('guild_me'); } catch {}
   }, [currentPlayerId]);
 
-  const saveTimer   = useRef(null);
-  const lastEditRef = useRef(0); // horodatage du dernier edit utilisateur
+  const saveTimer      = useRef(null);   // timer en attente (scheduleSave)
+  const saveInProgress = useRef(false);  // fetch GS en cours
+  const lastGSSave     = useRef(0);      // timestamp dernière save GS réussie
   const initialLoad = useRef(true);
 
   // ── Restore state from object ──────────────────────────────────────────
@@ -553,28 +554,41 @@ function App() {
     })();
   }, []);
 
-  // ── Auto-save when state changes ───────────────────────────────────────
+  // ── Auto-save (pattern Résonance) ──────────────────────────────────────────
   useEffect(() => {
     if (loading) return;
     if (initialLoad.current) { initialLoad.current = false; return; }
 
-    lastEditRef.current = Date.now(); // marque l'edit
     const state = { players, events, guildName, adminPwd };
-    lsSave(state);
+    lsSave(state); // localStorage immédiat
 
+    // Garde : ne jamais envoyer si players ET events sont vides (protection race condition)
     if (!isConfigured()) { setSyncStatus('offline'); return; }
+    if (!state.players?.length && !state.events?.length) return;
 
-    setSyncStatus('saving');
+    // Planifier la save GS (débounce 800ms)
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
+      saveTimer.current = null; // timer consommé
+      if (saveInProgress.current) {
+        // Save déjà en cours → replanifier
+        saveTimer.current = setTimeout(arguments.callee, 800);
+        return;
+      }
+      saveInProgress.current = true;
+      setSyncStatus('saving');
       try {
         await sheetsSave(state);
+        lastGSSave.current = Date.now();
         setSyncStatus('saved');
       } catch {
         setSyncStatus('error');
+      } finally {
+        saveInProgress.current = false;
       }
     }, 800);
   }, [players, events, guildName, adminPwd]);
+
 
   // ── Toast helper ───────────────────────────────────────────────────────
   const toast = useCallback((msg, type='success') => {
@@ -591,13 +605,15 @@ function App() {
   const syncCls   = {saving:'saving',saved:'ok',error:'error',offline:'offline',idle:'offline'}[syncStatus];
 
 
-  // ── Polling: recharge depuis GS toutes les 30s ──────────────────────────────
+  // ── Polling GS (30s) — pattern Résonance ────────────────────────────────────
   useEffect(() => {
     if (!isConfigured()) return;
     const poll = setInterval(async () => {
-      // Ne pas écraser si l'utilisateur a édité récemment (5s de grâce)
-      if (Date.now() - lastEditRef.current < 5000) return;
-      // Ne pas écraser si un champ est actif
+      // Garde 1 : save planifiée ou en cours → skip
+      if (saveInProgress.current || saveTimer.current) return;
+      // Garde 2 : save GS récente (< 5s) → skip
+      if (Date.now() - lastGSSave.current < 5000) return;
+      // Garde 3 : utilisateur en train de saisir → skip
       const tag = document.activeElement?.tagName?.toUpperCase();
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       try {
@@ -612,6 +628,7 @@ function App() {
     }, 30000);
     return () => clearInterval(poll);
   }, []);
+
 
 
 
