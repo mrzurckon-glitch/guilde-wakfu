@@ -200,9 +200,6 @@
     .subrole-mini{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:default;flex-shrink:0;position:relative;}
     .subrole-mini:hover::after{content:attr(data-label);position:absolute;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:3px 7px;border-radius:5px;font-size:10px;white-space:nowrap;z-index:10;top:22px;left:50%;transform:translateX(-50%);}
     /* ev-reg version (smaller, 48px encart) */
-    .ev-reg-role{width:auto;min-width:52px;flex-shrink:0;display:flex;align-items:center;gap:4px;padding:0 7px;background:var(--bg3);}
-    .ev-reg-hex{width:30px;height:30px;min-width:30px;min-height:30px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .ev-reg-hex img{width:100%;height:100%;object-fit:cover;}
     .ev-reg-hex.tank{background:rgba(55,138,221,.35);}
 
     .ev-reg-hex.dpt {background:rgba(224,107,107,.35);}
@@ -212,6 +209,29 @@
     .subrole-mini-sm{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);cursor:default;}
     /* subrole checkboxes in form */
 
+
+
+
+    .identity-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px;animation:fadeIn .2s ease;}
+    .identity-step-title{font-family:'Cinzel',serif;font-size:13px;color:var(--purple-l);margin-bottom:4px;}
+    .identity-step-sub{font-size:11px;color:var(--muted2);margin-bottom:14px;}
+    .pwd-input-wrap{position:relative;display:flex;align-items:center;}
+    .pwd-input-wrap input{width:100%;padding-right:36px;}
+    .pwd-eye{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:var(--muted2);font-size:14px;padding:0;line-height:1;}
+    .pwd-eye:hover{color:var(--text);}
+    .identity-error{font-size:11px;color:var(--danger);margin-top:6px;display:flex;align-items:center;gap:5px;}
+    .identity-fields{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+    .identity-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+    .pwd-strength{height:3px;border-radius:2px;margin-top:4px;transition:width .3s,background .3s;}
+
+    .search-bar{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;margin-bottom:16px;transition:border-color .2s;}
+    .search-bar:focus-within{border-color:var(--purple);}
+    .search-bar input{flex:1;background:none;border:none;outline:none;font-size:13px;color:var(--text);font-family:'Nunito',sans-serif;}
+    .search-bar input::placeholder{color:var(--muted2);}
+    .search-icon{font-size:14px;color:var(--muted2);flex-shrink:0;}
+    .search-clear{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0;}
+    .search-clear:hover{color:var(--text);}
+    .search-count{font-size:11px;color:var(--muted2);white-space:nowrap;flex-shrink:0;}
 
     .chars-expand-btn{width:100%;background:none;border:none;border-top:1px dashed var(--border);color:var(--muted2);font-size:11px;padding:6px 0 2px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:color .15s;font-family:'Nunito',sans-serif;margin-top:4px;}
     .chars-expand-btn:hover{color:var(--purple-l);}
@@ -237,7 +257,6 @@
 
     .subrole-section-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;}
     /* ev-reg subroles */
-    .ev-reg-role{width:auto;min-width:48px;max-width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;background:var(--bg3);flex-wrap:wrap;}
 
     /* EVENT REGISTRATION ENCARTS */
 
@@ -247,6 +266,16 @@
     .btn-amber:hover{background:rgba(239,159,39,.1);}
 
     .ev-regs{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+    /* EV-REG RIGHT PANEL */
+    .ev-reg-role{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 10px;background:var(--bg3);}
+    .ev-reg-hex{width:30px;height:30px;min-width:30px;min-height:30px;flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .ev-reg-hex img{width:100%;height:100%;object-fit:cover;}
+    .ev-reg-hex.tank{background:rgba(55,138,221,.35);}
+    .ev-reg-hex.heal{background:rgba(29,158,117,.35);}
+    .ev-reg-hex.dpt{background:rgba(224,107,107,.35);}
+    .ev-reg-hex.supp{background:rgba(127,212,232,.25);}
+    .ev-reg-hex.none{background:rgba(255,255,255,.08);}
+
     .ev-reg-encart{display:flex;align-items:stretch;border-radius:8px;overflow:hidden;border:1px solid var(--border);height:48px;transition:border-color .15s;}
     .ev-reg-encart:hover{border-color:var(--border2);}
     .ev-reg-art{width:48px;flex-shrink:0;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;}
@@ -255,7 +284,6 @@
     .ev-reg-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 10px;background:var(--bg2);min-width:0;}
     .ev-reg-char{font-family:'Cinzel',serif;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .ev-reg-player{font-size:10px;color:var(--muted2);margin-top:1px;}
-    .ev-reg-role{width:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg3);}
     .ev-reg-hex{width:30px;height:30px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:13px;}
     .ev-reg-hex.tank{background:rgba(55,138,221,.35);}
 
@@ -371,7 +399,7 @@ const CLASS_THEMES = {
   'Zobal':     {gradient:'135deg,#1a0a1a,#501050', accent:'#c084e8'},
 };
 
-const ROLES   = [{id:'tank',label:'Tank',icon:'🛡'},{id:'heal',label:'Heal',icon:'💊'},{id:'dpt',label:'DPT',icon:'⚔'},{id:'supp',label:'Support',icon:'✨'}];
+const ROLES = [{id:'tank',label:'Tank',icon:'🛡'},{id:'dpt',label:'DPT',icon:'⚔'},{id:'supp',label:'Support',icon:'✨'}];
 
 
 const ROLE_ICONS = {
@@ -441,7 +469,7 @@ const DEMO = {
   adminPwd  : 'admin',
   players   : [
     {id:uid(), pseudo:'Shadowblade', chars:[{id:uid(),name:'ShadowIop',cls:'Iop',role:'dpt'},{id:uid(),name:'ShadowCra',cls:'Cra',role:'dpt'}]},
-    {id:uid(), pseudo:'Lumina',      chars:[{id:uid(),name:'LuminaHupper',cls:'Huppermage',role:'heal'}]},
+    {id:uid(), pseudo:'Lumina',      chars:[{id:uid(),name:'LuminaHupper',cls:'Huppermage',role:'supp'}]},
     {id:uid(), pseudo:'IronFist',    chars:[{id:uid(),name:'FistSacri',cls:'Sacrieur',role:'tank'},{id:uid(),name:'FistPanda',cls:'Pandawa',role:'supp'}]},
   ],
   events: [],
@@ -550,21 +578,6 @@ function App() {
 
   const currentPlayer = players.find(p => p.id === currentPlayerId) || null;
 
-  const handleIdentify = (pseudo) => {
-    const t = pseudo.trim();
-    if (!t) return;
-    const existing = players.find(p => p.pseudo.toLowerCase() === t.toLowerCase());
-    if (existing) {
-      setCurrentPlayerId(existing.id);
-      toast('Bienvenue, ' + existing.pseudo + ' !');
-    } else {
-      const np = {id: uid(), pseudo: t, chars: []};
-      setPlayers(ps => [...ps, np]);
-      setCurrentPlayerId(np.id);
-      toast('"' + t + '" ajouté à la guilde !');
-    }
-  };
-
   if (loading) return h('div',{className:'loading-screen'}, h('div',{className:'loader'}), h('p',null,'Chargement des données…'));
 
   const now = new Date();
@@ -616,7 +629,7 @@ function App() {
         h('button', {className:'tab'+(tab==='events'?' active':''), onClick:()=>setTab('events')}, 'Événements', upcoming>0&&h('span',{className:'badge'},upcoming))
       ),
 
-      h(IdentityBar, {currentPlayer, players, onIdentify: handleIdentify, onLeave: () => setCurrentPlayerId(null)}),
+      h(IdentityBar, {currentPlayer, players, setPlayers, onIdentified: id=>setCurrentPlayerId(id), onLeave:()=>setCurrentPlayerId(null), toast}),
       tab==='roster' ? h(RosterTab, {players, setPlayers, isAdmin, currentPlayerId, toast})
       : h(EventsTab, {events, setEvents, players, isAdmin, currentPlayerId, toast})
     )
@@ -678,12 +691,77 @@ function NotifPanel({notifs, onClose}) {
 
 
 
+
+async function hashPassword(pwd) {
+  const data = new TextEncoder().encode(pwd + 'demimoll_v1');
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 // ════════════════════════════════════════════════════════════════════════════
 // IDENTITY BAR
 // ════════════════════════════════════════════════════════════════════════════
 
-function IdentityBar({currentPlayer, players, onIdentify, onLeave}) {
-  const [pseudo, setPseudo] = React.useState('');
+function IdentityBar({currentPlayer, players, setPlayers, onIdentified, onLeave, toast}) {
+  const [pseudo,    setPseudo]    = React.useState('');
+  const [step,      setStep]      = React.useState('idle'); // idle|create-pwd|enter-pwd
+  const [pending,   setPending]   = React.useState(null);
+  const [pwd1,      setPwd1]      = React.useState('');
+  const [pwd2,      setPwd2]      = React.useState('');
+  const [pwdIn,     setPwdIn]     = React.useState('');
+  const [show1,     setShow1]     = React.useState(false);
+  const [show2,     setShow2]     = React.useState(false);
+  const [showIn,    setShowIn]    = React.useState(false);
+  const [err,       setErr]       = React.useState('');
+  const [loading,   setLoading]   = React.useState(false);
+
+  const reset = () => { setPseudo(''); setStep('idle'); setPending(null); setPwd1(''); setPwd2(''); setPwdIn(''); setErr(''); setLoading(false); };
+
+  const pwdStrength = p => { if(!p) return 0; let s=0; if(p.length>=6)s++; if(/[A-Z]/.test(p))s++; if(/[0-9]/.test(p))s++; if(/[^A-Za-z0-9]/.test(p))s++; return s; };
+  const strengthColor = s => ['#E24B4A','#EF9F27','#5DCAA5','#1D9E75'][s-1]||'#E24B4A';
+
+  const handlePseudo = () => {
+    const t = pseudo.trim();
+    if (!t) return;
+    const existing = players.find(p => p.pseudo.toLowerCase() === t.toLowerCase());
+    if (existing) {
+      setPending(existing);
+      setStep(existing.pwdHash ? 'enter-pwd' : 'create-pwd');
+    } else {
+      setPending({id:uid(), pseudo:t, chars:[]});
+      setStep('create-pwd');
+    }
+    setErr('');
+  };
+
+  const handleCreatePwd = async () => {
+    if (pwd1.length < 4) { setErr('4 caractères minimum'); return; }
+    if (pwd1 !== pwd2)   { setErr('Les mots de passe ne correspondent pas'); return; }
+    setLoading(true);
+    const hash = await hashPassword(pwd1);
+    const updated = {...pending, pwdHash: hash};
+    if (players.find(p => p.id === pending.id)) {
+      setPlayers(ps => ps.map(p => p.id === pending.id ? updated : p));
+    } else {
+      setPlayers(ps => [...ps, updated]);
+    }
+    onIdentified(updated.id);
+    toast('Bienvenue, ' + updated.pseudo + ' !');
+    reset();
+  };
+
+  const handleEnterPwd = async () => {
+    setLoading(true);
+    const hash = await hashPassword(pwdIn);
+    if (hash === pending.pwdHash) {
+      onIdentified(pending.id);
+      toast('Bienvenue, ' + pending.pseudo + ' !');
+      reset();
+    } else {
+      setErr('Mot de passe incorrect');
+      setLoading(false);
+    }
+  };
+
   if (currentPlayer) {
     const init = currentPlayer.pseudo.slice(0,2).toUpperCase();
     return h('div', {className:'identity-bar'},
@@ -693,19 +771,78 @@ function IdentityBar({currentPlayer, players, onIdentify, onLeave}) {
       h('button', {className:'btn btn-sm btn-outline', style:{marginLeft:'auto'}, onClick:onLeave}, 'Changer')
     );
   }
-  return h('div', {className:'identity-bar'},
-    h('span', {className:'identity-hint'}, '👤 Qui êtes-vous ?'),
-    h('input', {placeholder:'Entrez votre pseudo…', value:pseudo, onChange:e=>setPseudo(e.target.value), onKeyDown:e=>{if(e.key==='Enter')onIdentify(pseudo);}}),
-    h('button', {className:'btn btn-sm btn-purple', onClick:()=>onIdentify(pseudo)}, 'Rejoindre')
+
+  return h('div', null,
+    h('div', {className:'identity-bar'},
+      h('span', {className:'identity-hint'}, '👤 Qui êtes-vous ?'),
+      step === 'idle' && h('input', {
+        placeholder:'Votre pseudo…', value:pseudo,
+        onChange:e=>setPseudo(e.target.value),
+        onKeyDown:e=>{if(e.key==='Enter')handlePseudo();},
+        style:{flex:1}
+      }),
+      step === 'idle' && h('button', {className:'btn btn-sm btn-purple', onClick:handlePseudo}, 'Continuer →'),
+      step !== 'idle' && h('span', {style:{fontSize:'12px',color:'var(--purple-l)',fontFamily:"'Cinzel',serif"}}, pending?.pseudo),
+      step !== 'idle' && h('button', {className:'btn btn-sm btn-outline', style:{marginLeft:'auto'}, onClick:reset}, '← Retour')
+    ),
+    step === 'create-pwd' && h('div', {className:'identity-panel'},
+      h('div', {className:'identity-step-title'}, '🔐 Créer votre mot de passe'),
+      h('div', {className:'identity-step-sub'},
+        players.find(p=>p.id===pending?.id)
+          ? "Votre compte existe mais n'a pas encore de mot de passe. Choisissez-en un pour sécuriser votre accès."
+          : 'Nouveau compte détecté pour "'+pending?.pseudo+'". Choisissez un mot de passe.'
+      ),
+      h('div', {className:'identity-fields'},
+        h('div', {className:'pwd-input-wrap'},
+          h('input', {type:show1?'text':'password', placeholder:'Mot de passe…', value:pwd1, onChange:e=>setPwd1(e.target.value), onKeyDown:e=>{if(e.key==='Enter')handleCreatePwd();}}),
+          h('button', {className:'pwd-eye', onClick:()=>setShow1(s=>!s)}, show1?'🙈':'👁')
+        ),
+        pwd1 && h('div', {className:'pwd-strength', style:{width:(pwdStrength(pwd1)/4*100)+'%', background:strengthColor(pwdStrength(pwd1))}}),
+        h('div', {className:'pwd-input-wrap'},
+          h('input', {type:show2?'text':'password', placeholder:'Confirmer le mot de passe…', value:pwd2, onChange:e=>setPwd2(e.target.value), onKeyDown:e=>{if(e.key==='Enter')handleCreatePwd();}}),
+          h('button', {className:'pwd-eye', onClick:()=>setShow2(s=>!s)}, show2?'🙈':'👁')
+        )
+      ),
+      err && h('div', {className:'identity-error'}, '⚠ ', err),
+      h('div', {className:'identity-actions'},
+        h('button', {className:'btn btn-outline', onClick:reset}, 'Annuler'),
+        h('button', {className:'btn btn-purple', onClick:handleCreatePwd, disabled:loading}, loading?'…':'Créer le compte')
+      )
+    ),
+    step === 'enter-pwd' && h('div', {className:'identity-panel'},
+      h('div', {className:'identity-step-title'}, '🔑 Connexion'),
+      h('div', {className:'identity-step-sub'}, 'Entrez votre mot de passe pour accéder à votre compte.'),
+      h('div', {className:'identity-fields'},
+        h('div', {className:'pwd-input-wrap'},
+          h('input', {type:showIn?'text':'password', placeholder:'Mot de passe…', value:pwdIn, autoFocus:true, onChange:e=>setPwdIn(e.target.value), onKeyDown:e=>{if(e.key==='Enter')handleEnterPwd();}}),
+          h('button', {className:'pwd-eye', onClick:()=>setShowIn(s=>!s)}, showIn?'🙈':'👁')
+        )
+      ),
+      err && h('div', {className:'identity-error'}, '⚠ ', err),
+      h('div', {className:'identity-actions'},
+        h('button', {className:'btn btn-outline', onClick:reset}, 'Annuler'),
+        h('button', {className:'btn btn-purple', onClick:handleEnterPwd, disabled:loading}, loading?'…':'Se connecter')
+      )
+    )
   );
 }
+
 
 // ════════════════════════════════════════════════════════════════════════════
 // ROSTER
 // ════════════════════════════════════════════════════════════════════════════
 
 function RosterTab({players, setPlayers, isAdmin, currentPlayerId, toast}) {
-  const [newP, setNewP] = useState('');
+  const [newP,   setNewP]   = useState('');
+  const [search, setSearch] = useState('');
+  const query = search.trim().toLowerCase();
+  const filteredPlayers = query
+    ? players.filter(p =>
+        p.pseudo.toLowerCase().includes(query) ||
+        p.chars.some(c => c.name.toLowerCase().includes(query) || c.cls.toLowerCase().includes(query))
+      )
+    : players;
+
   const addPlayer = () => {
     const t = newP.trim();
     if (!t || players.find(p=>p.pseudo.toLowerCase()===t.toLowerCase())) return;
@@ -722,10 +859,20 @@ function RosterTab({players, setPlayers, isAdmin, currentPlayerId, toast}) {
   const updateChar = (pid,cid,updates) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.map(c=>c.id===cid?{...c,...updates}:c)} : p));
   const rmChar  = (pid,cid) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.filter(c=>c.id!==cid)} : p));
   return h('div', null,
+    h('div', {className:'search-bar'},
+      h('span', {className:'search-icon'}, '🔍'),
+      h('input', {
+        placeholder:'Rechercher un joueur ou un personnage…',
+        value: search,
+        onChange: e => setSearch(e.target.value)
+      }),
+      search && h('button', {className:'search-clear', onClick:()=>setSearch(''), title:'Effacer'}, '✕'),
+      query && h('span', {className:'search-count'}, filteredPlayers.length + ' résultat' + (filteredPlayers.length!==1?'s':''))
+    ),
     h('div', {className:'sec'}, `${players.length} Joueur${players.length>1?'s':''}`),
-    players.length===0
-      ? h('div',{className:'empty-state'}, h('div',{className:'big'},'Aucun joueur'), 'Aucun membre enregistré.')
-      : h('div', {className:'player-grid'}, players.map(p => h(PlayerCard, {key:p.id, player:p, isAdmin, currentPlayerId, onAddChar:addChar, onUpdateChar:updateChar, onRmChar:rmChar, onRm:rmPlayer}))),
+    filteredPlayers.length===0
+      ? h('div',{className:'empty-state'}, h('div',{className:'big'},'Aucun résultat'), 'Aucun joueur ou personnage ne correspond à "'+query+'".')
+      : h('div', {className:'player-grid'}, filteredPlayers.map(p => h(PlayerCard, {key:p.id, player:p, isAdmin, currentPlayerId, onAddChar:addChar, onUpdateChar:updateChar, onRmChar:rmChar, onRm:rmPlayer}))),
     isAdmin && h('div', {className:'add-player-row'},
       h('input', {placeholder:'Pseudo joueur…', value:newP, onChange:e=>setNewP(e.target.value), onKeyDown:e=>{if(e.key==='Enter')addPlayer();}}),
       h('button', {className:'btn btn-purple', onClick:addPlayer}, '+ Ajouter')
@@ -1030,13 +1177,26 @@ function EventCard({event, players, isAdmin, currentPlayerId, onReg, onUnreg, on
             h('div',{className:'ev-reg-player', title:(p?.pseudo||'?')+(c?' · '+c.cls:'')}, '👤 '+(p?.pseudo||'?')+(c?' · '+c.cls:''))
           ),
           h('div',{className:'ev-reg-role'},
-            (c?.elements||[]).length > 0 && h('div',{style:{display:'grid',gridTemplateColumns:'14px 14px',gap:'2px',alignContent:'center'}},
-              (c.elements||[]).slice(0,4).map(id=>h('div',{key:id,style:{width:'14px',height:'14px',borderRadius:'3px',overflow:'hidden'},title:ELEMENTS.find(e=>e.id===id)?.label||id},
-                ELEMENT_ICONS[id]?h('img',{src:ELEMENT_ICONS[id],alt:id,draggable:false,style:{width:'100%',height:'100%',objectFit:'cover'}}):id
+            (c?.elements||[]).length > 0 && h('div',{style:{display:'flex',flexDirection:'column',gap:'2px',alignSelf:'center',flexShrink:0}},
+              [0,1].map(row=>h('div',{key:row,style:{display:'flex',gap:'2px'}},
+                [0,1].map(col=>{const id=(c.elements||[])[row*2+col];return id?h('div',{key:col,style:{width:'14px',height:'14px',borderRadius:'3px',overflow:'hidden',flexShrink:0},title:(ELEMENTS.find(e=>e.id===id)||{}).label||id},ELEMENT_ICONS[id]?h('img',{src:ELEMENT_ICONS[id],alt:id,draggable:false,style:{width:'100%',height:'100%',objectFit:'cover'}}):null):h('div',{key:col,style:{width:'14px',height:'14px'}});})
               ))
             ),
-            h('div',{className:'ev-reg-hex '+(reg.role||'none')}, ro&&ROLE_ICONS[reg.role] ? h('img',{src:ROLE_ICONS[reg.role],alt:ro.label,draggable:false}) : (ro?ro.icon:'?')),
-            (() => { const subs=(c?.subRoles||[]).map(id=>SUBROLE_MAP[id]).filter(Boolean); return subs.length>0 && h('div',{style:{display:'grid',gridTemplateColumns:'14px 14px',gap:'2px',alignContent:'center'}},subs.slice(0,6).map(s=>h('div',{key:s.id,style:{width:'14px',height:'14px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'8px',background:'rgba(255,255,255,.1)',border:'1px solid rgba(255,255,255,.12)'},title:s.label}, SUBROLE_ICONS[s.id] ? h('img',{src:SUBROLE_ICONS[s.id],alt:s.label,draggable:false,style:{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}) : s.icon))); })()
+            h('div',{className:'ev-reg-hex '+(reg.role||'none'),style:{flexShrink:0}},
+              ro&&ROLE_ICONS[reg.role]?h('img',{src:ROLE_ICONS[reg.role],alt:ro.label,draggable:false}):(ro?ro.icon:'?')
+            ),
+            (()=>{
+              const subs=(c?.subRoles||[]).map(id=>SUBROLE_MAP[id]).filter(Boolean);
+              if(!subs.length)return null;
+              return h('div',{style:{display:'flex',gap:'2px',alignSelf:'center',flexShrink:0}},
+                h('div',{style:{display:'flex',flexDirection:'column',gap:'2px'}},
+                  subs.slice(0,3).map(s=>h('div',{key:s.id,style:{width:'14px',height:'14px',borderRadius:'50%',overflow:'hidden',flexShrink:0},title:s.label},SUBROLE_ICONS[s.id]?h('img',{src:SUBROLE_ICONS[s.id],alt:s.label,draggable:false,style:{width:'100%',height:'100%',objectFit:'cover'}}):s.icon))
+                ),
+                subs.length>3&&h('div',{style:{display:'flex',flexDirection:'column',gap:'2px'}},
+                  subs.slice(3,6).map(s=>h('div',{key:s.id+'b',style:{width:'14px',height:'14px',borderRadius:'50%',overflow:'hidden',flexShrink:0},title:s.label},SUBROLE_ICONS[s.id]?h('img',{src:SUBROLE_ICONS[s.id],alt:s.label,draggable:false,style:{width:'100%',height:'100%',objectFit:'cover'}}):s.icon))
+                )
+              );
+            })()
           ),
           canDel && h('button',{className:'ev-reg-del',onClick:()=>onUnreg(event.id,reg.id),title:'Désinscrire'},'✕')
         );
