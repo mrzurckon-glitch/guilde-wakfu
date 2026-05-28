@@ -550,7 +550,8 @@ function App() {
   const [players,    setPlayers]    = useState([]);
   const [events,     setEvents]     = useState([]);
   const [guildName,  setGuildName]  = useState('Demimoll');
-  const [adminPwd,   setAdminPwd]   = useState('admin');
+  const [adminPwd,         setAdminPwd]         = useState('admin');
+  const [deletedPlayerIds, setDeletedPlayerIds] = useState([]);
   const [isAdmin,    setIsAdmin]    = useState(false);
   const [currentPlayerId, setCurrentPlayerId] = useState(() => { try { return localStorage.getItem('guild_me') || null; } catch { return null; } });
   const [tab,        setTab]        = useState('roster');
@@ -575,7 +576,8 @@ function App() {
     if (s.players)   setPlayers(s.players);
     if (s.events)    setEvents(s.events);
     if (s.guildName) setGuildName(s.guildName);
-    if (s.adminPwd)  setAdminPwd(s.adminPwd);
+    if (s.adminPwd)         setAdminPwd(s.adminPwd);
+    if (s.deletedPlayerIds) setDeletedPlayerIds(s.deletedPlayerIds);
     return true;
   };
 
@@ -607,7 +609,7 @@ function App() {
     if (initialLoad.current) { initialLoad.current = false; return; }
     // Si c'est le poll qui a mis à jour le state → ne pas sauvegarder
     if (_pollUpdating) { _pollUpdating = false; return; }
-    const state = { players, events, guildName, adminPwd };
+    const state = { players, events, guildName, adminPwd, deletedPlayerIds };
     lsSave(state);                       // localStorage immédiat
     scheduleSave(state, setSyncStatus);  // GS avec debounce 800ms
   }, [players, events, guildName, adminPwd]);
@@ -652,6 +654,7 @@ function App() {
           setEvents(data.events);
           setGuildName(data.guildName);
           setAdminPwd(data.adminPwd);
+          if (data.deletedPlayerIds) setDeletedPlayerIds(data.deletedPlayerIds);
         });
         setLastSync(new Date());
       } catch { /* silent */ }
@@ -733,7 +736,7 @@ function App() {
       ),
 
       h(IdentityBar, {currentPlayer, players, setPlayers, onIdentified: id=>setCurrentPlayerId(id), onLeave:()=>setCurrentPlayerId(null), toast}),
-      tab==='roster' ? h(RosterTab, {players, setPlayers, isAdmin, currentPlayerId, toast})
+      tab==='roster' ? h(RosterTab, {players, setPlayers, isAdmin, currentPlayerId, deletedPlayerIds, setDeletedPlayerIds, toast})
       : h(EventsTab, {events, setEvents, players, isAdmin, currentPlayerId, toast})
     )
   );
@@ -935,7 +938,7 @@ function IdentityBar({currentPlayer, players, setPlayers, onIdentified, onLeave,
 // ROSTER
 // ════════════════════════════════════════════════════════════════════════════
 
-function RosterTab({players, setPlayers, isAdmin, currentPlayerId, toast}) {
+function RosterTab({players, setPlayers, isAdmin, currentPlayerId, deletedPlayerIds, setDeletedPlayerIds, toast}) {
   const [newP,   setNewP]   = useState('');
   const [search, setSearch] = useState('');
   const query = search.trim().toLowerCase();
@@ -956,11 +959,12 @@ function RosterTab({players, setPlayers, isAdmin, currentPlayerId, toast}) {
   const rmPlayer = id => {
     const p = players.find(x=>x.id===id);
     setPlayers(ps => ps.filter(p=>p.id!==id));
+    setDeletedPlayerIds(d => [...new Set([...d, id])]);
     toast(`"${p?.pseudo}" retiré`,'info');
   };
   const addChar    = (pid,name,cls,role,subRoles,elements) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:[...p.chars,{id:uid(),name,cls,role,subRoles:subRoles||[],elements:elements||[]}]} : p));
   const updateChar = (pid,cid,updates) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.map(c=>c.id===cid?{...c,...updates}:c)} : p));
-  const rmChar  = (pid,cid) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.filter(c=>c.id!==cid)} : p));
+  const rmChar  = (pid,cid) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.filter(c=>c.id!==cid), deletedCharIds:[...new Set([...(p.deletedCharIds||[]), cid])]} : p));
   return h('div', null,
     h('div', {className:'search-bar'},
       h('span', {className:'search-icon'}, '🔍'),
