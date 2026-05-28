@@ -1133,7 +1133,7 @@ function PlayerCard({player, isAdmin, currentPlayerId, onAddChar, onUpdateChar, 
     h('div', {className:'char-encarts'},
       player.chars.length === 0
         ? h('div', {className:'no-chars'}, 'Aucun personnage')
-        : (collapsed ? player.chars.slice(0, VISIBLE) : player.chars).map(c => h(CharEncart, {key:c.id, player, c, canEdit, onRmChar, onUpdateChar}))
+        : (collapsed ? player.chars.slice(0, VISIBLE) : player.chars).map((c, i, arr) => h(CharEncart, {key:c.id, player, c, idx:player.chars.indexOf(c), totalChars:player.chars.length, canEdit, onRmChar, onUpdateChar, onReorderChar}))
     ),
     player.chars.length > VISIBLE && h('button', {
       className:'chars-expand-btn',
