@@ -517,7 +517,9 @@ function App() {
     try { if (currentPlayerId) localStorage.setItem('guild_me', currentPlayerId); else localStorage.removeItem('guild_me'); } catch {}
   }, [currentPlayerId]);
 
-  const saveTimer = useRef(null);
+  const saveTimer       = useRef(null);
+  const lastModifiedRef = useRef(0);  // timestamp of last local edit
+  const skipNextSave    = useRef(false); // set by poll to avoid write-back loop
   const initialLoad = useRef(true);
 
   // ── Restore state from object ──────────────────────────────────────────
@@ -557,8 +559,11 @@ function App() {
     if (loading) return;
     if (initialLoad.current) { initialLoad.current = false; return; }
 
+    // If this update came from polling, skip saving back to Sheets
+    if (skipNextSave.current) { skipNextSave.current = false; return; }
+    lastModifiedRef.current = Date.now();
     const state = { players, events, guildName, adminPwd };
-    lsSave(state); // always save locally immediately
+    lsSave(state);
 
     if (!isConfigured()) { setSyncStatus('offline'); return; }
 
@@ -589,19 +594,24 @@ function App() {
   const syncCls   = {saving:'saving',saved:'ok',error:'error',offline:'offline',idle:'offline'}[syncStatus];
 
 
-  // ── Polling: refresh from Sheets every 30s ────────────────────────────────
+  // ── Polling: refresh from Sheets every 30s ─────────────────────────────────
+  // Safe: never overwrites if a local edit happened in the last 10s
   useEffect(() => {
     if (!isConfigured()) return;
     const poll = setInterval(async () => {
-      // Don't poll if a save is pending
+      // Skip if user edited recently (10s grace) or save in flight
+      const idleSince = Date.now() - lastModifiedRef.current;
+      if (idleSince < 10000) return;
       if (syncStatus === 'saving') return;
       try {
         const data = await sheetsLoad();
-        if (!data) return;
-        // Only update if data actually changed (compare serialized)
-        const remote = JSON.stringify({p:data.players, e:data.events, g:data.guildName});
-        const local  = JSON.stringify({p:players, e:events, g:guildName});
-        if (remote !== local) {
+        if (!data || !data.players) return;
+        // Compare without triggering save loop: use serialised snapshot
+        const remoteStr = JSON.stringify({p:data.players, e:data.events, g:data.guildName});
+        const localStr  = JSON.stringify({p:players,      e:events,      g:guildName});
+        if (remoteStr !== localStr) {
+          skipNextSave.current    = true;
+          lastModifiedRef.current = Date.now();
           if (data.players)   setPlayers(data.players);
           if (data.events)    setEvents(data.events);
           if (data.guildName) setGuildName(data.guildName);
@@ -610,7 +620,7 @@ function App() {
       } catch { /* silent fail */ }
     }, 30000);
     return () => clearInterval(poll);
-  }, [syncStatus, players, events, guildName]);
+  }, []);  // empty deps: interval is stable, reads latest via ref+closure
 
   const currentPlayer = players.find(p => p.id === currentPlayerId) || null;
 
