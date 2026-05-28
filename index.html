@@ -347,7 +347,7 @@
 // ⚙️  CONFIGURATION — Collez ici l'URL de votre Google Apps Script
 //     Exemple : https://script.google.com/macros/s/AKfyc.../exec
 // ═══════════════════════════════════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkwxF2wafx9OlcqjOHZPYA3ZmhrMeBnVPlohVRiQoNB92_kFadukE7_WhEUqekqtE5vQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby8pogWEPx5uKhMO8f7HliJS_BcAfZ3ErCY0TkTF9G1lffaDtWXopDFzvK1cjrzqyZzBg/exec';
 
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -552,6 +552,7 @@ function App() {
   const [guildName,  setGuildName]  = useState('Demimoll');
   const [adminPwd,         setAdminPwd]         = useState('admin');
   const [deletedPlayerIds, setDeletedPlayerIds] = useState([]);
+  const [deletedEventIds,  setDeletedEventIds]  = useState([]);
   const [isAdmin,    setIsAdmin]    = useState(false);
   const [currentPlayerId, setCurrentPlayerId] = useState(() => { try { return localStorage.getItem('guild_me') || null; } catch { return null; } });
   const [tab,        setTab]        = useState('roster');
@@ -578,6 +579,7 @@ function App() {
     if (s.guildName) setGuildName(s.guildName);
     if (s.adminPwd)         setAdminPwd(s.adminPwd);
     if (s.deletedPlayerIds) setDeletedPlayerIds(s.deletedPlayerIds);
+    if (s.deletedEventIds)  setDeletedEventIds(s.deletedEventIds);
     return true;
   };
 
@@ -609,7 +611,7 @@ function App() {
     if (initialLoad.current) { initialLoad.current = false; return; }
     // Si c'est le poll qui a mis à jour le state → ne pas sauvegarder
     if (_pollUpdating) { _pollUpdating = false; return; }
-    const state = { players, events, guildName, adminPwd, deletedPlayerIds };
+    const state = { players, events, guildName, adminPwd, deletedPlayerIds, deletedEventIds };
     lsSave(state);                       // localStorage immédiat
     scheduleSave(state, setSyncStatus);  // GS avec debounce 800ms
   }, [players, events, guildName, adminPwd]);
@@ -655,6 +657,7 @@ function App() {
           setGuildName(data.guildName);
           setAdminPwd(data.adminPwd);
           if (data.deletedPlayerIds) setDeletedPlayerIds(data.deletedPlayerIds);
+          if (data.deletedEventIds)  setDeletedEventIds(data.deletedEventIds);
         });
         setLastSync(new Date());
       } catch { /* silent */ }
@@ -737,7 +740,7 @@ function App() {
 
       h(IdentityBar, {currentPlayer, players, setPlayers, onIdentified: id=>setCurrentPlayerId(id), onLeave:()=>setCurrentPlayerId(null), toast}),
       tab==='roster' ? h(RosterTab, {players, setPlayers, isAdmin, currentPlayerId, deletedPlayerIds, setDeletedPlayerIds, toast})
-      : h(EventsTab, {events, setEvents, players, isAdmin, currentPlayerId, toast})
+      : h(EventsTab, {events, setEvents, players, isAdmin, currentPlayerId, deletedEventIds, setDeletedEventIds, toast})
     )
   );
 }
@@ -1144,11 +1147,11 @@ function PlayerCard({player, isAdmin, currentPlayerId, onAddChar, onUpdateChar, 
 // EVENTS
 // ════════════════════════════════════════════════════════════════════════════
 
-function EventsTab({events, setEvents, players, isAdmin, currentPlayerId, toast}) {
+function EventsTab({events, setEvents, players, isAdmin, currentPlayerId, deletedEventIds, setDeletedEventIds, toast}) {
   const [showForm, setShowForm] = useState(false);
   const now = new Date();
   const addEv    = ev  => { setEvents(es => [ev,...es]); setShowForm(false); toast(`Événement "${ev.title}" créé !`); };
-  const rmEv     = id  => { const ev=events.find(e=>e.id===id); setEvents(es=>es.filter(e=>e.id!==id)); toast(`"${ev?.title}" supprimé`,'info'); };
+  const rmEv     = id  => { const ev=events.find(e=>e.id===id); setEvents(es=>es.filter(e=>e.id!==id)); setDeletedEventIds(d=>[...new Set([...d, id])]); toast(`"${ev?.title}" supprimé`,'info'); };
   const editEv   = (id, updates) => { setEvents(es=>es.map(e=>e.id===id?{...e,...updates}:e)); toast('Événement mis à jour !'); };
   const register = (evId,playerId,charId,role) => {
     setEvents(es => es.map(e => e.id===evId && !e.registrations.find(r=>charId && r.charId===charId)
@@ -1157,7 +1160,11 @@ function EventsTab({events, setEvents, players, isAdmin, currentPlayerId, toast}
     toast(`${p?.pseudo} s'est inscrit !`);
   };
   const unregister = (evId,regId) => {
-    setEvents(es => es.map(e => e.id===evId ? {...e,registrations:e.registrations.filter(r=>r.id!==regId)} : e));
+    setEvents(es => es.map(e => e.id===evId ? {
+      ...e,
+      registrations: e.registrations.filter(r=>r.id!==regId),
+      deletedRegIds: [...new Set([...(e.deletedRegIds||[]), regId])]
+    } : e));
     toast('Joueur désinscrit','info');
   };
   const upcoming = events.filter(e=>new Date(e.date)>=now).sort((a,b)=>new Date(a.date)-new Date(b.date));
