@@ -518,8 +518,8 @@ function App() {
   }, [currentPlayerId]);
 
   const saveTimer       = useRef(null);
-  const lastModifiedRef = useRef(0);  // timestamp of last local edit
-  const skipNextSave    = useRef(false); // set by poll to avoid write-back loop
+  const lastModifiedRef = useRef(0);
+  const stateRef        = useRef({players:[], events:[], guildName:''});
   const initialLoad = useRef(true);
 
   // ── Restore state from object ──────────────────────────────────────────
@@ -559,8 +559,6 @@ function App() {
     if (loading) return;
     if (initialLoad.current) { initialLoad.current = false; return; }
 
-    // If this update came from polling, skip saving back to Sheets
-    if (skipNextSave.current) { skipNextSave.current = false; return; }
     lastModifiedRef.current = Date.now();
     const state = { players, events, guildName, adminPwd };
     lsSave(state);
@@ -595,32 +593,39 @@ function App() {
 
 
   // ── Polling: refresh from Sheets every 30s ─────────────────────────────────
-  // Safe: never overwrites if a local edit happened in the last 10s
   useEffect(() => {
     if (!isConfigured()) return;
     const poll = setInterval(async () => {
-      // Skip if user edited recently (10s grace) or save in flight
-      const idleSince = Date.now() - lastModifiedRef.current;
-      if (idleSince < 10000) return;
-      if (syncStatus === 'saving') return;
+      // Skip if user edited in the last 10s
+      if (Date.now() - lastModifiedRef.current < 10000) return;
       try {
         const data = await sheetsLoad();
-        if (!data || !data.players) return;
-        // Compare without triggering save loop: use serialised snapshot
-        const remoteStr = JSON.stringify({p:data.players, e:data.events, g:data.guildName});
-        const localStr  = JSON.stringify({p:players,      e:events,      g:guildName});
-        if (remoteStr !== localStr) {
-          skipNextSave.current    = true;
+        if (!data?.players) return;
+        // Compare against CURRENT state via ref (no stale closure)
+        const cur = stateRef.current;
+        const remoteP = JSON.stringify(data.players);
+        const remoteE = JSON.stringify(data.events);
+        const localP  = JSON.stringify(cur.players);
+        const localE  = JSON.stringify(cur.events);
+        if (remoteP !== localP || remoteE !== localE) {
+          // Stamp NOW so save effect doesn't write right back before Sheets catches up
           lastModifiedRef.current = Date.now();
           if (data.players)   setPlayers(data.players);
           if (data.events)    setEvents(data.events);
           if (data.guildName) setGuildName(data.guildName);
         }
         setLastSync(new Date());
-      } catch { /* silent fail */ }
+      } catch { /* silent */ }
     }, 30000);
     return () => clearInterval(poll);
-  }, []);  // empty deps: interval is stable, reads latest via ref+closure
+  }, []); // stable — reads live state via stateRef
+
+
+
+  // Keep stateRef current so the poll never reads stale data
+  useEffect(() => {
+    stateRef.current = { players, events, guildName };
+  }, [players, events, guildName]);
 
   const currentPlayer = players.find(p => p.id === currentPlayerId) || null;
 
