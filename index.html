@@ -241,6 +241,11 @@
 
     .char-edit-form{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:6px;display:flex;flex-direction:column;gap:7px;}
     .char-edit-form .subrole-grid{gap:4px;}
+
+    .btn-order{background:none;border:none;cursor:pointer;color:var(--muted2);font-size:10px;padding:0 1px;line-height:1;transition:color .15s;}
+    .btn-order:hover{color:var(--purple-l);}
+    .btn-order:disabled{opacity:.2;cursor:default;}
+
     .btn-edit{background:none;border:none;cursor:pointer;opacity:.4;padding:0 2px;font-size:11px;color:var(--purple-l);transition:opacity .15s;line-height:1;}
     .btn-edit:hover{opacity:1;}
 
@@ -980,7 +985,15 @@ function RosterTab({players, setPlayers, isAdmin, currentPlayerId, deletedPlayer
     toast(`"${p?.pseudo}" retiré`,'info');
   };
   const addChar    = (pid,name,cls,role,subRoles,elements) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:[...p.chars,{id:uid(),name,cls,role,subRoles:subRoles||[],elements:elements||[]}]} : p));
-  const updateChar = (pid,cid,updates) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.map(c=>c.id===cid?{...c,...updates}:c)} : p));
+  const updateChar  = (pid,cid,updates) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.map(c=>c.id===cid?{...c,...updates}:c)} : p));
+  const reorderChar = (pid,cid,dir) => setPlayers(ps => ps.map(p => {
+    if (p.id !== pid) return p;
+    const chars = [...p.chars];
+    const idx = chars.findIndex(c => c.id === cid);
+    if (dir === 'up'   && idx > 0)              { [chars[idx-1],chars[idx]] = [chars[idx],chars[idx-1]]; }
+    if (dir === 'down' && idx < chars.length-1) { [chars[idx],chars[idx+1]] = [chars[idx+1],chars[idx]]; }
+    return {...p, chars};
+  }));
   const rmChar  = (pid,cid) => setPlayers(ps => ps.map(p => p.id===pid ? {...p, chars:p.chars.filter(c=>c.id!==cid), deletedCharIds:[...new Set([...(p.deletedCharIds||[]), cid])]} : p));
   return h('div', null,
     h('div', {className:'search-bar'},
@@ -1005,7 +1018,7 @@ function RosterTab({players, setPlayers, isAdmin, currentPlayerId, deletedPlayer
   );
 }
 
-function CharEncart({player, c, canEdit, onRmChar, onUpdateChar}) {
+function CharEncart({player, c, idx, totalChars, canEdit, onRmChar, onUpdateChar, onReorderChar}) {
   const [editing,   setEditing]   = React.useState(false);
   const [eName,     setEName]     = React.useState(c.name);
   const [eCls,      setECls]      = React.useState(c.cls);
@@ -1058,6 +1071,8 @@ function CharEncart({player, c, canEdit, onRmChar, onUpdateChar}) {
         )
       ),
       canEdit && h('div', {className:'encart-actions', style:{gap:'2px'}},
+        h('button', {className:'btn-order', onClick:()=>onReorderChar(player.id,c.id,'up'),   disabled:idx===0,            title:'Monter'},   '▲'),
+        h('button', {className:'btn-order', onClick:()=>onReorderChar(player.id,c.id,'down'), disabled:idx===totalChars-1, title:'Descendre'},'▼'),
         h('button', {className:'btn-edit', onClick:()=>setEditing(s=>!s), title:'Modifier'}, editing?'✕':'✏'),
         h('button', {className:'char-rm', style:{fontSize:'12px',padding:'4px'}, onClick:()=>onRmChar(player.id,c.id), title:'Supprimer'}, '✕')
       )
@@ -1086,7 +1101,7 @@ function CharEncart({player, c, canEdit, onRmChar, onUpdateChar}) {
   );
 }
 
-function PlayerCard({player, isAdmin, currentPlayerId, onAddChar, onUpdateChar, onRmChar, onRm}) {
+function PlayerCard({player, isAdmin, currentPlayerId, onAddChar, onUpdateChar, onReorderChar, onRmChar, onRm}) {
   const isOwn   = player.id === currentPlayerId;
   const canEdit = isAdmin || isOwn;
   const [name,     setName]     = React.useState('');
