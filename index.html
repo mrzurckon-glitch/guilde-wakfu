@@ -357,8 +357,9 @@ const LOGO_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAYAAACL
 var _saveTimer      = null;
 var _saveInProgress = false;
 var _lastGSSave     = 0;
-var _pollUpdating   = false;
-var _lastUserEdit   = 0;      // timestamp de la dernière action utilisateur
+var _pollUpdating      = false;
+var _lastUserEdit      = 0;
+var _currentPlayerId   = null; // ref module-level pour le poll      // timestamp de la dernière action utilisateur
 
 // Toute interaction utilisateur bloque le poll pendant 2s
 document.addEventListener('click',   function() { _lastUserEdit = Date.now(); });
@@ -652,7 +653,14 @@ function App() {
         if (!data?.players) return;
         _pollUpdating = true;
         ReactDOM.unstable_batchedUpdates(function() {
-          setPlayers(data.players);
+          // Protéger le joueur courant si GS ne l'a pas encore (save en transit)
+          setPlayers(function(local) {
+            var inIds = {};
+            (data.players||[]).forEach(function(p){ inIds[p.id]=true; });
+            var me = _currentPlayerId ? local.find(function(p){ return p.id===_currentPlayerId; }) : null;
+            if (me && !inIds[me.id]) return (data.players||[]).concat([me]);
+            return data.players || local;
+          });
           setEvents(data.events);
           setGuildName(data.guildName);
           setAdminPwd(data.adminPwd);
