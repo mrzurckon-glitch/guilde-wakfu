@@ -656,8 +656,9 @@ function App() {
           setEvents(data.events);
           setGuildName(data.guildName);
           setAdminPwd(data.adminPwd);
-          if (data.deletedPlayerIds) setDeletedPlayerIds(data.deletedPlayerIds);
-          if (data.deletedEventIds)  setDeletedEventIds(data.deletedEventIds);
+          // Merge tombstones (union) pour ne pas perdre les suppressions locales non encore sauvegardées
+          if (data.deletedPlayerIds) setDeletedPlayerIds(function(local) { return [...new Set([...local, ...data.deletedPlayerIds])]; });
+          if (data.deletedEventIds)  setDeletedEventIds(function(local)  { return [...new Set([...local, ...data.deletedEventIds])];  });
         });
         setLastSync(new Date());
       } catch { /* silent */ }
