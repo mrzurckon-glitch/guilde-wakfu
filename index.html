@@ -1009,7 +1009,7 @@ function RosterTab({players, setPlayers, isAdmin, currentPlayerId, deletedPlayer
     h('div', {className:'sec'}, `${players.length} Joueur${players.length>1?'s':''}`),
     filteredPlayers.length===0
       ? h('div',{className:'empty-state'}, h('div',{className:'big'},'Aucun résultat'), 'Aucun joueur ou personnage ne correspond à "'+query+'".')
-      : h('div', {className:'player-grid'}, filteredPlayers.map(p => h(PlayerCard, {key:p.id, player:p, isAdmin, currentPlayerId, onAddChar:addChar, onUpdateChar:updateChar, onRmChar:rmChar, onRm:rmPlayer}))),
+      : h('div', {className:'player-grid'}, filteredPlayers.map(p => h(PlayerCard, {key:p.id, player:p, isAdmin, currentPlayerId, onAddChar:addChar, onUpdateChar:updateChar, onReorderChar:reorderChar, onRmChar:rmChar, onRm:rmPlayer}))),
     isAdmin && h('div', {className:'add-player-row'},
       h('input', {placeholder:'Pseudo joueur…', value:newP, onChange:e=>setNewP(e.target.value), onKeyDown:e=>{if(e.key==='Enter')addPlayer();}}),
       h('button', {className:'btn btn-purple', onClick:addPlayer}, '+ Ajouter')
