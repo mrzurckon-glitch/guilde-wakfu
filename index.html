@@ -517,7 +517,8 @@ function App() {
     try { if (currentPlayerId) localStorage.setItem('guild_me', currentPlayerId); else localStorage.removeItem('guild_me'); } catch {}
   }, [currentPlayerId]);
 
-  const saveTimer       = useRef(null);
+  const saveTimer   = useRef(null);
+  const lastEditRef = useRef(0); // horodatage du dernier edit utilisateur
   const initialLoad = useRef(true);
 
   // ── Restore state from object ──────────────────────────────────────────
@@ -557,6 +558,7 @@ function App() {
     if (loading) return;
     if (initialLoad.current) { initialLoad.current = false; return; }
 
+    lastEditRef.current = Date.now(); // marque l'edit
     const state = { players, events, guildName, adminPwd };
     lsSave(state);
 
@@ -593,7 +595,9 @@ function App() {
   useEffect(() => {
     if (!isConfigured()) return;
     const poll = setInterval(async () => {
-      // Ne pas écraser si l'utilisateur est en train de saisir
+      // Ne pas écraser si l'utilisateur a édité récemment (5s de grâce)
+      if (Date.now() - lastEditRef.current < 5000) return;
+      // Ne pas écraser si un champ est actif
       const tag = document.activeElement?.tagName?.toUpperCase();
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       try {
