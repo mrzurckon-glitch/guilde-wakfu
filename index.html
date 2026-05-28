@@ -496,7 +496,8 @@ const fmtDate = d => { try { return new Date(d).toLocaleDateString('fr-FR',{week
 
 function App() {
   const [loading,    setLoading]    = useState(true);
-  const [syncStatus, setSyncStatus] = useState('idle'); // 'idle'|'saving'|'saved'|'error'|'offline'
+  const [syncStatus, setSyncStatus] = useState('idle');
+  const [lastSync,   setLastSync]   = useState(null); // 'idle'|'saving'|'saved'|'error'|'offline'
   const [players,    setPlayers]    = useState([]);
   const [events,     setEvents]     = useState([]);
   const [guildName,  setGuildName]  = useState('Demimoll');
@@ -584,7 +585,32 @@ function App() {
 
   // ── Sync badge ─────────────────────────────────────────────────────────
   const syncLabel = {saving:'🔄 Sauvegarde…',saved:'☁️ Synchronisé',error:'⚠️ Erreur sync',offline:'💾 Local uniquement',idle:''}[syncStatus];
+  const fmtSync = d => d ? d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : null;
   const syncCls   = {saving:'saving',saved:'ok',error:'error',offline:'offline',idle:'offline'}[syncStatus];
+
+
+  // ── Polling: refresh from Sheets every 30s ────────────────────────────────
+  useEffect(() => {
+    if (!isConfigured()) return;
+    const poll = setInterval(async () => {
+      // Don't poll if a save is pending
+      if (syncStatus === 'saving') return;
+      try {
+        const data = await sheetsLoad();
+        if (!data) return;
+        // Only update if data actually changed (compare serialized)
+        const remote = JSON.stringify({p:data.players, e:data.events, g:data.guildName});
+        const local  = JSON.stringify({p:players, e:events, g:guildName});
+        if (remote !== local) {
+          if (data.players)   setPlayers(data.players);
+          if (data.events)    setEvents(data.events);
+          if (data.guildName) setGuildName(data.guildName);
+        }
+        setLastSync(new Date());
+      } catch { /* silent fail */ }
+    }, 30000);
+    return () => clearInterval(poll);
+  }, [syncStatus, players, events, guildName]);
 
   const currentPlayer = players.find(p => p.id === currentPlayerId) || null;
 
@@ -613,8 +639,15 @@ function App() {
         h('div', {className:'header-divider'}),
         isAdmin && h('div', {style:{marginTop:'4px'}}, h('span', {className:'admin-chip'}, '🔓 Mode Admin actif')),
         h('div', {className:'header-icons'},
-          syncStatus !== 'idle' && h('span', {className:'sync-badge '+syncCls},
-            syncStatus==='saving' ? h('span',{className:'spin'},'⟳') : null, ' ', syncLabel
+          h('span', {className:'sync-badge '+(syncStatus!=='idle'?syncCls:'offline'), style:{flexDirection:'column',alignItems:'flex-start',gap:'1px'}},
+            h('span', {style:{display:'flex',alignItems:'center',gap:'4px'}},
+              syncStatus==='saving' ? h('span',{className:'spin'},'⟳') : null,
+              syncStatus!=='idle' ? syncLabel : '💾 Local'
+            ),
+            lastSync && h('span', {className:'sync-last'},
+              h('span', {className:'sync-pulse'}),
+              'Sync ' + fmtSync(lastSync)
+            )
           ),
           h('button', {className:'icon-btn'+(showNotifs?' active':''), onClick:()=>{setShowNotifs(s=>!s);setUnread(0);}, title:'Notifications'},
             '🔔', unread>0 && h('span',{className:'notif-badge'}, unread>9?'9+':unread)
