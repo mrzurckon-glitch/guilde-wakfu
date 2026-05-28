@@ -518,8 +518,6 @@ function App() {
   }, [currentPlayerId]);
 
   const saveTimer       = useRef(null);
-  const lastModifiedRef = useRef(0);
-  const stateRef        = useRef({players:[], events:[], guildName:''});
   const initialLoad = useRef(true);
 
   // ── Restore state from object ──────────────────────────────────────────
@@ -559,7 +557,6 @@ function App() {
     if (loading) return;
     if (initialLoad.current) { initialLoad.current = false; return; }
 
-    lastModifiedRef.current = Date.now();
     const state = { players, events, guildName, adminPwd };
     lsSave(state);
 
@@ -574,7 +571,7 @@ function App() {
       } catch {
         setSyncStatus('error');
       }
-    }, 1500);
+    }, 800);
   }, [players, events, guildName, adminPwd]);
 
   // ── Toast helper ───────────────────────────────────────────────────────
@@ -592,33 +589,26 @@ function App() {
   const syncCls   = {saving:'saving',saved:'ok',error:'error',offline:'offline',idle:'offline'}[syncStatus];
 
 
-  // ── Polling: refresh from Sheets every 30s ─────────────────────────────────
+  // ── Polling: recharge depuis GS toutes les 30s ──────────────────────────────
   useEffect(() => {
     if (!isConfigured()) return;
     const poll = setInterval(async () => {
-      // Skip if user edited in the last 10s
-      if (Date.now() - lastModifiedRef.current < 10000) return;
+      // Ne pas écraser si l'utilisateur est en train de saisir
+      const tag = document.activeElement?.tagName?.toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       try {
         const data = await sheetsLoad();
         if (!data?.players) return;
-        // Compare against CURRENT state via ref (no stale closure)
-        const cur = stateRef.current;
-        const remoteP = JSON.stringify(data.players);
-        const remoteE = JSON.stringify(data.events);
-        const localP  = JSON.stringify(cur.players);
-        const localE  = JSON.stringify(cur.events);
-        if (remoteP !== localP || remoteE !== localE) {
-          // Stamp NOW so save effect doesn't write right back before Sheets catches up
-          lastModifiedRef.current = Date.now();
-          if (data.players)   setPlayers(data.players);
-          if (data.events)    setEvents(data.events);
-          if (data.guildName) setGuildName(data.guildName);
-        }
+        if (data.players)   setPlayers(data.players);
+        if (data.events)    setEvents(data.events);
+        if (data.guildName) setGuildName(data.guildName);
+        if (data.adminPwd)  setAdminPwd(data.adminPwd);
         setLastSync(new Date());
       } catch { /* silent */ }
     }, 30000);
     return () => clearInterval(poll);
-  }, []); // stable — reads live state via stateRef
+  }, []);
+
 
 
 
