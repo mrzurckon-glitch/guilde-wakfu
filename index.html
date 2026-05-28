@@ -633,11 +633,15 @@ function App() {
         const data = await sheetsLoad();
         if (!data?.players) return;
         // Signaler au useEffect save de NE PAS re-sauvegarder ces updates
+        // unstable_batchedUpdates force le batch même en mode legacy
+        // createRoot le fait automatiquement — double protection
         _pollUpdating = true;
-        setPlayers(data.players);
-        setEvents(data.events);
-        setGuildName(data.guildName);
-        setAdminPwd(data.adminPwd);
+        ReactDOM.unstable_batchedUpdates(function() {
+          setPlayers(data.players);
+          setEvents(data.events);
+          setGuildName(data.guildName);
+          setAdminPwd(data.adminPwd);
+        });
         setLastSync(new Date());
       } catch { /* silent */ }
     }, 30000);
@@ -1321,7 +1325,9 @@ function EventCard({event, players, isAdmin, currentPlayerId, onReg, onUnreg, on
   );
 }
 
-ReactDOM.render(h(App), document.getElementById('root'));
+// React 18 createRoot — active le batching automatique dans setInterval/setTimeout
+const _reactRoot = ReactDOM.createRoot(document.getElementById('root'));
+_reactRoot.render(h(App));
 </script>
 </body>
 </html>
